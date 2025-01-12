@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase"; // Firebase configuration
 import { addDoc, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -13,19 +13,20 @@ const UploadPage = () => {
   const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        //@ Todo: Fetch the userName by cookie(sessions)
+        const data = await getSubmissionsByTeacher("anoop");
+        console.log("Previous teacher data: ", data);
+        setSubmissions(data);
+      } catch (error) {
+        console.error("Error fetching submissions:", error);
+      }
+    };
 
-      const fetchSubmissions = async () => {
-        try {
-          //@ Todo: Fetch the userName by cookie 
-          const data = await getSubmissionsByTeacher("anoop"); 
-          setSubmissions(data); 
-        } catch (error) {
-          console.error("Error fetching submissions:", error);
-        }
-      };
-  
-      fetchSubmissions();
-
+    fetchSubmissions();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -43,6 +44,7 @@ const UploadPage = () => {
         teacherName,
         fileName: file.name,
         uploadedBy: auth.currentUser.email,
+        status: "Under Review",
         uploadedAt: new Date(),
       });
 
@@ -102,8 +104,6 @@ const UploadPage = () => {
         <button type="submit">Upload</button>
       </form>
 
-
-
       <h1>Previously Submitted</h1>
       {submissions.length > 0 ? (
         submissions.map((sub) => (
@@ -113,6 +113,7 @@ const UploadPage = () => {
             <p>Teacher Name: {sub.teacherName}</p>
             <p>Status: {sub.status}</p>
             {sub.feedback && <p>Feedback: {sub.feedback}</p>}
+            <br></br>
           </div>
         ))
       ) : (

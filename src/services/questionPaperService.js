@@ -1,4 +1,4 @@
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 
 const submissions = [];
@@ -35,16 +35,26 @@ export const getSubmissionsByTeacher = async (name) => {
   }
 };
 
-export const provideFeedback = (id, feedback) => {
-  const submission = submissions.find((sub) => sub.id === id);
-  if (submission) {
-    submission.feedback = feedback;
+export const provideFeedback = async (id, feedback) => {
+  try {
+    const docRef = doc(db, "uploads", id);
+    await updateDoc(docRef, { feedback });
+    await updateDoc(docRef, { status: "Pending Revision" });
+    
+    console.log(`Feedback added to submission with ID: ${id}`);
+  } catch (error) {
+    console.error("Error providing feedback:", error);
+    throw error;
   }
 };
 
-export const approveSubmission = (id) => {
-  const submission = submissions.find((sub) => sub.id === id);
-  if (submission) {
-    submission.status = "Approved";
+export const approveSubmission = async (id) => {
+  try {
+    const docRef = doc(db, "uploads", id);
+    await updateDoc(docRef, { status: "Approved" });
+    console.log(`Submission with ID: ${id} approved`);
+  } catch (error) {
+    console.error("Error approving submission:", error);
+    throw error;
   }
 };
