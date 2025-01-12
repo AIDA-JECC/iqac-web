@@ -1,10 +1,11 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { auth, db } from "../firebase"; // Firebase config
-import { doc, getDoc } from "firebase/firestore";
-
+//import { auth, db } from "../firebase"; // Firebase config
+//import { doc, getDoc } from "firebase/firestore";
+import Cookies from "js-cookie";
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const user = auth.currentUser;
+  //const user = auth.currentUser;
+  const user = Cookies.get("userRole");
 
   // If user is not logged in, redirect to login page
   if (!user) {
@@ -12,11 +13,12 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   // Fetch user's role and validate access
-  const fetchUserRole = async () => {
-    const userDoc = await getDoc(doc(db, "users", user.email));
-    if (userDoc.exists()) {
-      const userRole = userDoc.data().role;
-      return userRole === requiredRole;
+  const fetchUserRole = () => {
+    //const userDoc = await getDoc(doc(db, "users", user.email));
+    //if (userDoc.exists()) {
+    if (user) {
+      //const userRole = userDoc.data().role;
+      return user === requiredRole;
     }
     return false;
   };

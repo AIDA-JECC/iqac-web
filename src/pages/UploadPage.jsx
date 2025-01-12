@@ -3,13 +3,29 @@ import { db, auth } from "../firebase"; // Firebase configuration
 import { addDoc, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getSubmissionsByTeacher } from "../services/questionPaperService";
 
 const UploadPage = () => {
   const [subjectCode, setSubjectCode] = useState("");
   const [courseName, setCourseName] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [file, setFile] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate();
+
+
+      const fetchSubmissions = async () => {
+        try {
+          //@ Todo: Fetch the userName by cookie 
+          const data = await getSubmissionsByTeacher("anoop"); 
+          setSubmissions(data); 
+        } catch (error) {
+          console.error("Error fetching submissions:", error);
+        }
+      };
+  
+      fetchSubmissions();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -85,6 +101,23 @@ const UploadPage = () => {
         </div>
         <button type="submit">Upload</button>
       </form>
+
+
+
+      <h1>Previously Submitted</h1>
+      {submissions.length > 0 ? (
+        submissions.map((sub) => (
+          <div key={sub.id}>
+            <p>Subject Code: {sub.subjectCode}</p>
+            <p>Course Name: {sub.courseName}</p>
+            <p>Teacher Name: {sub.teacherName}</p>
+            <p>Status: {sub.status}</p>
+            {sub.feedback && <p>Feedback: {sub.feedback}</p>}
+          </div>
+        ))
+      ) : (
+        <p>Loading submissions...</p>
+      )}
     </div>
   );
 };

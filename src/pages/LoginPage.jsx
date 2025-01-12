@@ -1,14 +1,29 @@
 import React, { useState } from "react";
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  signOut,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 import { auth, db } from "../firebase"; // Firebase configuration
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { doc, getDoc } from "firebase/firestore";
+import Cookies from "js-cookie";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+
+  const setAuthPersistence = () => {
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.error("Error setting persistence:", error);
+      toast.error("Error setting authentication persistence.");
+    });
+  };
 
   // Function to fetch user role from Firestore
   const fetchUserRole = async (email) => {
@@ -30,12 +45,19 @@ const LoginPage = () => {
   // Google Sign-In
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
+    setAuthPersistence(); // Set persistence before signing in
 
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
       const userRole = await fetchUserRole(user.email);
+      Cookies.set("userRole", userRole, {
+        expires: 1,
+        secure: true,
+        sameSite: "Strict",
+        path: "/",
+      });
       if (userRole === "faculty") {
         navigate("/upload");
       } else if (userRole === "admin") {
@@ -53,6 +75,7 @@ const LoginPage = () => {
   // Email/Password Login
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
+    setAuthPersistence(); // Set persistence before signing in
 
     try {
       // Authenticate the user
@@ -60,6 +83,12 @@ const LoginPage = () => {
       const user = result.user;
 
       const userRole = await fetchUserRole(email);
+      Cookies.set("userRole", userRole, {
+        expires: 1,
+        secure: true,
+        sameSite: "Strict",
+        path: "/",
+      });
       if (userRole === "faculty") {
         navigate("/upload");
       } else if (userRole === "admin") {
