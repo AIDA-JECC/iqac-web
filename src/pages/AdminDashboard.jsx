@@ -7,7 +7,7 @@ import {
 
 const Dashboard = () => {
   const [submissions, setSubmissions] = useState([]); // State to store submissions
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState({});
 
   useEffect(() => {
     const fetchSubmissions = async () => {
@@ -22,11 +22,28 @@ const Dashboard = () => {
     fetchSubmissions();
   }, []);
 
+  const handleFeedbackChange = (id, value) => {
+    setFeedback((prev) => ({
+      ...prev,
+      [id]: value, // Update feedback for the specific submission
+    }));
+  };
+
   const handleFeedback = async (id) => {
     try {
-      await provideFeedback(id, feedback); // Submit feedback
+      console.log()
+      const feedbacks = feedback[id]; // Get feedback for the specific submission
+      if (!feedbacks) {
+        alert("Please enter feedback before submitting!");
+        return;
+      }
+
+      await provideFeedback(id, feedbacks); // Submit feedback
       alert("Feedback submitted!");
-      setFeedback("");
+      setFeedback((prev) => ({
+        ...prev,
+        [id]: "", // Clear feedback input for this submission
+      }));
     } catch (error) {
       console.error("Error submitting feedback:", error);
     }
@@ -55,8 +72,8 @@ const Dashboard = () => {
             <input
               type="text"
               placeholder="Provide Feedback"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
+              value={feedback[sub.id] || ""}
+              onChange={(e) =>  handleFeedbackChange(sub.id, e.target.value)}
             />
             <button onClick={() => handleFeedback(sub.id)}>
               Submit Feedback
