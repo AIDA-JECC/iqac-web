@@ -3,11 +3,15 @@ import { db, auth } from "../firebase"; // Firebase configuration
 import { addDoc, collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { getSubmissionsByTeacher } from "../services/questionPaperService";
+import {
+  getSubmissionsByTeacher,
+  getSubmissionsByStausAndEmail,
+} from "../services/questionPaperService";
 //import { updateUserRole } from "../services/questionPaperService";
 
 const UploadPage = () => {
   const [subjectCode, setSubjectCode] = useState("");
+  const [department, setDepartment] = useState("");
   const [courseName, setCourseName] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [file, setFile] = useState(null);
@@ -17,9 +21,10 @@ const UploadPage = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-       // await updateUserRole(auth.currentUser.email)
+        // await updateUserRole(auth.currentUser.email)
         const data = await getSubmissionsByTeacher(auth.currentUser.email);
-        console.log(auth.currentUser)
+        //console.log("TEST appproved:",await getSubmissionsByStausAndEmail(auth.currentUser.email,"Approved"))
+        console.log(auth.currentUser);
         console.log("Previous teacher data: ", data);
         setSubmissions(data);
       } catch (error) {
@@ -47,6 +52,7 @@ const UploadPage = () => {
         fileName: file.name,
         uploadedBy: auth.currentUser.email,
         status: "Under Review",
+        dept: department,
         uploadedAt: new Date(),
       });
 
@@ -83,6 +89,15 @@ const UploadPage = () => {
             type="text"
             value={courseName}
             onChange={(e) => setCourseName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>Department</label>
+          <input
+            type="text"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
             required
           />
         </div>

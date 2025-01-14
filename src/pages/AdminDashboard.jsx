@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  getSubmissions,
+  getApprovedSubmissions,
   provideFeedback,
   approveSubmission,
 } from "../services/questionPaperService";
@@ -12,7 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const data = await getSubmissions();
+        const data = await getApprovedSubmissions("Approved");
         setSubmissions(data);
       } catch (error) {
         console.error("Error fetching submissions:", error);
@@ -31,7 +31,7 @@ const Dashboard = () => {
 
   const handleFeedback = async (id) => {
     try {
-      console.log()
+      console.log();
       const feedbacks = feedback[id]; // Get feedback for the specific submission
       if (!feedbacks) {
         alert("Please enter feedback before submitting!");
@@ -73,7 +73,7 @@ const Dashboard = () => {
               type="text"
               placeholder="Provide Feedback"
               value={feedback[sub.id] || ""}
-              onChange={(e) =>  handleFeedbackChange(sub.id, e.target.value)}
+              onChange={(e) => handleFeedbackChange(sub.id, e.target.value)}
             />
             <button onClick={() => handleFeedback(sub.id)}>
               Submit Feedback

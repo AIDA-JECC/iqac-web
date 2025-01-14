@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
 
   // Redirect to login page if user is not authenticated or role does not match
-  if (auth.currentUser.email == "sachin.ad21@jecc.ac.in"){
+  if (auth.currentUser.email == "sachin.ad21@jecc.ac.in") {
     return children;
   }
   if (!auth.currentUser || userRole !== requiredRole) {

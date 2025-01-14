@@ -1,4 +1,11 @@
-import { collection, getDocs, query, where, doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 
 const submissions = [];
@@ -8,22 +15,56 @@ export const uploadQuestionPaper = (data) => {
 };
 
 // export const getSubmissions = () => submissions;
-export const getSubmissions = async () => {
-  const collectionRef = collection(db, "uploads");
-  const querySnapshot = await getDocs(collectionRef);
-  const documents = querySnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
+// get submissions based on status
+// for Admin
+export const getApprovedSubmissions = async (status) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const approvedQuery = query(collectionRef, where("status", "==", status));
+    const querySnapshot = await getDocs(approvedQuery);
 
-  console.log("Fetched Documents:", documents);
-  return documents;
+    const documents = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("Approved Submissions:", documents);
+    return documents;
+  } catch (error) {
+    console.error("Error fetching approved submissions:", error);
+    return [];
+  }
 };
 
+// For teachers to sort through submission
+export const getSubmissionsByStausAndEmail = async (email, status) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const submissionsQuery = query(
+      collectionRef,
+      where("uploadedBy", "==", email),
+      where("status", "==", status)
+    );
+    const querySnapshot = await getDocs(submissionsQuery);
+
+    const documents = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    console.log("Approved Submissions:", documents);
+    return documents;
+  } catch (error) {
+    console.error("Error fetching approved submissions:", error);
+    return [];
+  }
+};
+
+// for teachers to get all the submission submitted by them
 export const getSubmissionsByTeacher = async (email) => {
   try {
-    const collectionRef = collection(db, "uploads"); 
-    const q = query(collectionRef, where("uploadedBy", "==", email)); 
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("uploadedBy", "==", email));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -40,7 +81,7 @@ export const provideFeedback = async (id, feedback) => {
     const docRef = doc(db, "uploads", id);
     await updateDoc(docRef, { feedback });
     await updateDoc(docRef, { status: "Pending Revision" });
-    
+
     console.log(`Feedback added to submission with ID: ${id}`);
   } catch (error) {
     console.error("Error providing feedback:", error);
@@ -58,7 +99,6 @@ export const approveSubmission = async (id) => {
     throw error;
   }
 };
-
 
 // export const updateUserRole = async (email) => {
 //   try {
