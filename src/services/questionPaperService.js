@@ -20,10 +20,10 @@ export const getSubmissions = async () => {
   return documents;
 };
 
-export const getSubmissionsByTeacher = async (name) => {
+export const getSubmissionsByTeacher = async (email) => {
   try {
     const collectionRef = collection(db, "uploads"); 
-    const q = query(collectionRef, where("teacherName", "==", name)); 
+    const q = query(collectionRef, where("uploadedBy", "==", email)); 
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map((doc) => ({
       id: doc.id,
@@ -58,3 +58,17 @@ export const approveSubmission = async (id) => {
     throw error;
   }
 };
+
+
+// export const updateUserRole = async (email) => {
+//   try {
+//     // Reference the user document in Firestore
+//     const userDocRef = doc(db, "users", email);
+
+//     // Update the user's role
+//     await updateDoc(userDocRef, { role: "sadmin" });
+
+//   } catch (error) {
+//     console.error("Error updating user role:", error);
+//   }
+// };

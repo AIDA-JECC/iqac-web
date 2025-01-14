@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getSubmissionsByTeacher } from "../services/questionPaperService";
+//import { updateUserRole } from "../services/questionPaperService";
 
 const UploadPage = () => {
   const [subjectCode, setSubjectCode] = useState("");
@@ -16,8 +17,9 @@ const UploadPage = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        //@ Todo: Fetch the userName by cookie(sessions)
-        const data = await getSubmissionsByTeacher("anoop");
+       // await updateUserRole(auth.currentUser.email)
+        const data = await getSubmissionsByTeacher(auth.currentUser.email);
+        console.log(auth.currentUser)
         console.log("Previous teacher data: ", data);
         setSubmissions(data);
       } catch (error) {

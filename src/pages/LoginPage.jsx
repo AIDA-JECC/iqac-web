@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   GoogleAuthProvider,
   signInWithPopup,
@@ -11,24 +11,18 @@ import { auth, db } from "../firebase"; // Firebase configuration
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { doc, getDoc } from "firebase/firestore";
-import Cookies from "js-cookie";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const setAuthPersistence = () => {
-    setPersistence(auth, browserLocalPersistence).catch((error) => {
-      console.error("Error setting persistence:", error);
-      toast.error("Error setting authentication persistence.");
-    });
-  };
-
   // Function to fetch user role from Firestore
   const fetchUserRole = async (email) => {
     try {
+      
       const userDoc = await getDoc(doc(db, "users", email));
+      console.log("USER DATA:", userDoc)
       if (userDoc.exists()) {
         return userDoc.data().role; // Return the user's role
       } else {
@@ -42,26 +36,36 @@ const LoginPage = () => {
     }
   };
 
+  useEffect(() => {
+    const redirect = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const role = await fetchUserRole(user.email);
+        if (role === "faculty") {
+          navigate("/upload");
+        } else if (role === "admin") {
+          navigate("/admin-dashboard");
+        }
+      }
+    };
+
+    redirect();
+  }, [navigate]); // Dependency on navigate to run once on mount
+
   // Google Sign-In
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-    setAuthPersistence(); // Set persistence before signing in
-
     try {
+      await setPersistence(auth, browserLocalPersistence); // Ensure persistence
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(user.email);
-      Cookies.set("userRole", userRole, {
-        expires: 1,
-        secure: true,
-        sameSite: "Strict",
-        path: "/",
-      });
       if (userRole === "faculty") {
         navigate("/upload");
       } else if (userRole === "admin") {
-        navigate("/admin-dashboard"); // Replace with your admin page route
+        navigate("/admin-dashboard");
       } else {
         toast.error("Unauthorized role.");
         await signOut(auth); // Sign out unauthorized users
@@ -75,20 +79,13 @@ const LoginPage = () => {
   // Email/Password Login
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
-    setAuthPersistence(); // Set persistence before signing in
-
     try {
-      // Authenticate the user
+      await setPersistence(auth, browserLocalPersistence); // Ensure persistence
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
+      if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(email);
-      Cookies.set("userRole", userRole, {
-        expires: 1,
-        secure: true,
-        sameSite: "Strict",
-        path: "/",
-      });
       if (userRole === "faculty") {
         navigate("/upload");
       } else if (userRole === "admin") {
