@@ -1,5 +1,12 @@
-import React, { useState } from "react";
-import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import React, { useState, useEffect } from "react";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  signOut,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth";
 import { auth, db } from "../firebase"; // Firebase configuration
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -13,7 +20,9 @@ const LoginPage = () => {
   // Function to fetch user role from Firestore
   const fetchUserRole = async (email) => {
     try {
+      
       const userDoc = await getDoc(doc(db, "users", email));
+      console.log("USER DATA:", userDoc)
       if (userDoc.exists()) {
         return userDoc.data().role; // Return the user's role
       } else {
@@ -27,19 +36,36 @@ const LoginPage = () => {
     }
   };
 
+  useEffect(() => {
+    const redirect = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const role = await fetchUserRole(user.email);
+        if (role === "faculty") {
+          navigate("/upload");
+        } else if (role === "admin") {
+          navigate("/admin-dashboard");
+        }
+      }
+    };
+
+    redirect();
+  }, [navigate]); // Dependency on navigate to run once on mount
+
   // Google Sign-In
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
-
     try {
+      await setPersistence(auth, browserLocalPersistence); // Ensure persistence
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
+      if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(user.email);
       if (userRole === "faculty") {
         navigate("/upload");
       } else if (userRole === "admin") {
-        navigate("/admin-dashboard"); // Replace with your admin page route
+        navigate("/admin-dashboard");
       } else {
         toast.error("Unauthorized role.");
         await signOut(auth); // Sign out unauthorized users
@@ -53,11 +79,11 @@ const LoginPage = () => {
   // Email/Password Login
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
-
     try {
-      // Authenticate the user
+      await setPersistence(auth, browserLocalPersistence); // Ensure persistence
       const result = await signInWithEmailAndPassword(auth, email, password);
       const user = result.user;
+      if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(email);
       if (userRole === "faculty") {

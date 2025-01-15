@@ -1,15 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, getDocs } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import {
+  getSubmissionsByTeacher,
+  getSubmissionsByStausAndEmail,
+} from "../services/questionPaperService";
+//import { updateUserRole } from "../services/questionPaperService";
 
 const UploadPage = () => {
   const [subjectCode, setSubjectCode] = useState("");
+  const [department, setDepartment] = useState("");
   const [courseName, setCourseName] = useState("");
   const [teacherName, setTeacherName] = useState("");
   const [file, setFile] = useState(null);
+  const [submissions, setSubmissions] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSubmissions = async () => {
+      try {
+        // await updateUserRole(auth.currentUser.email)
+        const data = await getSubmissionsByTeacher(auth.currentUser.email);
+        //console.log("TEST appproved:",await getSubmissionsByStausAndEmail(auth.currentUser.email,"Approved"))
+        console.log(auth.currentUser);
+        console.log("Previous teacher data: ", data);
+        setSubmissions(data);
+      } catch (error) {
+        console.error("Error fetching submissions:", error);
+      }
+    };
+
+    fetchSubmissions();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +51,8 @@ const UploadPage = () => {
         teacherName,
         fileName: file.name,
         uploadedBy: auth.currentUser.email,
+        status: "Under Review",
+        dept: department,
         uploadedAt: new Date(),
       });
 
@@ -67,6 +93,15 @@ const UploadPage = () => {
           />
         </div>
         <div>
+          <label>Department</label>
+          <input
+            type="text"
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            required
+          />
+        </div>
+        <div>
           <label>Teacher Name</label>
           <input
             type="text"
@@ -85,6 +120,22 @@ const UploadPage = () => {
         </div>
         <button type="submit">Upload</button>
       </form>
+
+      <h1>Previously Submitted</h1>
+      {submissions.length > 0 ? (
+        submissions.map((sub) => (
+          <div key={sub.id}>
+            <p>Subject Code: {sub.subjectCode}</p>
+            <p>Course Name: {sub.courseName}</p>
+            <p>Teacher Name: {sub.teacherName}</p>
+            <p>Status: {sub.status}</p>
+            {sub.feedback && <p>Feedback: {sub.feedback}</p>}
+            <br></br>
+          </div>
+        ))
+      ) : (
+        <p>Loading submissions...</p>
+      )}
     </div>
   );
 };
