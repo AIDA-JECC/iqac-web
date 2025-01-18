@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase"; // Your Firebase config
 import UnAuthorized from "./pages/UnAuthorized";
+import "./App.css"
 
 const App = () => {
 
@@ -26,7 +27,9 @@ const App = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return<div className="Loader">
+    <div>Loading...</div><div className="loading-spinner"></div>
+  </div>;
   }
 
   return (
