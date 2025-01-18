@@ -40,7 +40,7 @@ const LoginPage = () => {
   useEffect(() => {
 
     const redirect = async () => {
-      await signOut(auth);
+     
       const user = auth.currentUser;
       if (user) {
         const role = await fetchUserRole(user.email);
