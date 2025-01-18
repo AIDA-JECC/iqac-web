@@ -1,0 +1,180 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #ffffff;
+  }
+  
+  .mainContainer {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  
+  .leftDiv, .rightDiv {
+    flex: 1;
+  }
+  
+  .leftDiv {
+    background-color: #f0f0f0;
+    background-image: url('src/assets/clg greyscale.jpg'); /* Adjust image path */
+    background-size: cover;
+    background-position: center;
+  }
+  
+  .rightDiv {
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+  }
+  
+  .topSection {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .bottomSection {
+    flex: 2; /* Increase the flex value to make the section larger */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .logo img {
+    width: 60px;
+    margin-bottom: 20px;
+  }
+  
+  .socialButtons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .socialButton {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 50%;
+    background-color: #f1f1f1;
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .socialButton:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .orText {
+    margin: 20px 0;
+    font-size: 1rem;
+    color: #888;
+  }
+  
+  .form {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .inputGroup {
+    margin-bottom: 15px;
+    width: 100%;
+  }
+  
+  .inputGroup label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+    color: #333;
+  }
+  
+  .inputGroup input {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+  
+  .continueButton {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .continueButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .signupText {
+    margin-top: 20px;
+    font-size: 0.9rem;
+    color: #333;
+  }
+  
+  .signupText a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .signupText a:hover {
+    text-decoration: underline;
+  }
+  
+  .loginTitle {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 2rem;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  .roundButton {
+    width: 60px; /* Make the button circular */
+    height: 60px;
+    border: none;
+    background-color: #ffffff;
+    color: white;
+    cursor: pointer;
+    border-radius: 50%; /* Ensures the button is round */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Optional shadow for better aesthetics */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .roundButton:hover {
+    background-color: #f0f0f0; /* Lighter background on hover */
+    transform: scale(1.1); /* Slightly increase size on hover */
+  }
+  
+  .googleLogo {
+    width: 30px; /* Size of the Google logo */
+    height: 30px;
+  }
+  
