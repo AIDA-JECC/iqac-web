@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+
+    .LoginPage{
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .LoginLft{
+        width: 50vw;
+        height: 100vh;
+    }
+
+    .LoginCard {
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+        width: 50vw;
+    }
+
+    .LoginCard h1 {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #000000;
+        margin-bottom: 20px;
+        font-family: 'Roboto', sans-serif;
+
+    }
+
+   
+
+    .LoginCard input {
+        width: 30vw;
+        padding: 20px;
+        margin-bottom: 15px;
+        border: none;
+        border-radius: 5px;
+        color: #333;
+        font-size: 14px;
+        border-radius: 8px;
+        border: 1px solid #7288C7 ;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .LoginCard button {
+        width: 30vw;
+        gap: 0px;
+        border-radius: 37px 0px 0px 0px;
+        opacity: 0px;
+
+        padding: 25px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 16px;
+        background: #7288C7;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .LoginCard button:hover {
+        background-color: #5d70a3;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+
+
+   
+
+    h3{
+        font-size: 1rem;
+        color: #000000;
+        margin: 15px;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .LoginBtn{
+        margin-top: 10px;
+    }
+
+    .googleButton {
+        padding: 25px;
+        margin-top: 50px;
+        margin: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 250px;
+        height: 50px;
+        background-color: white;
+        border-radius: 25px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+        color: #5f6368;
+        cursor: pointer;
+        border: 1px solid #ddd;
+        transition: box-shadow 0.3s ease;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .google-button:hover {
+        box-shadow: 0 8px 10px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.08);
+    }
+
+    .googleIcon {
+        width: 20px;
+        height: 20px;
+        background: url('../assets/google.svg') no-repeat center center;
+        background-size: contain;
+
+    }
+
+    .txt{
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        font-size: 2rem;
+        color: #f0e4e4;
+    }
+
+    .jecLogo{
+        height: 20vh;
+        margin-bottom: 5vh;
+    }
+
+    .user,.pass{
+        margin-right: 10px !important;
+    }
+
+    .user{
+        height:23px;
+        position:center;
+    }
+
+    .pass{
+        height:20px;
+    }

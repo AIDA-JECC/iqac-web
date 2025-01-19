@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { auth, db } from "../firebase"; // Firebase config
 import { doc, getDoc } from "firebase/firestore";
+import "../App.css"
+
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [userRole, setUserRole] = useState(null);
@@ -34,7 +36,9 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="Loader">
+      <div>Loading...</div><div className="loading-spinner"></div>
+    </div>;
   }
 
   // Redirect to login page if user is not authenticated or role does not match
