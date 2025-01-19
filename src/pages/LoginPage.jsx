@@ -40,12 +40,11 @@ const LoginPage = () => {
   useEffect(() => {
 
     const redirect = async () => {
-      await signOut(auth);
       const user = auth.currentUser;
       if (user) {
         const role = await fetchUserRole(user.email);
         if (role === "faculty") {
-          navigate("/upload");
+          navigate("/faculty");
         } else if (role === "admin") {
           navigate("/admin-dashboard");
         }

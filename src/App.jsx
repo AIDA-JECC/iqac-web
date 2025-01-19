@@ -1,8 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import UploadPage from "./pages/UploadPage";
+import FacultyPage from "./pages/FacultyPage";
 import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard page
+import Dashboard from "./pages/Dashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
@@ -37,10 +38,18 @@ const App = () => {
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route
-          path="/upload"
+          path="/faculty"
           element={
             <ProtectedRoute requiredRole="faculty">
-              <UploadPage />
+              <FacultyPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/hod"
+          element={
+            <ProtectedRoute requiredRole="faculty">
+              <Dashboard />
             </ProtectedRoute>
           }
         />

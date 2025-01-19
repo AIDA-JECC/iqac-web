@@ -1,3 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Markazi+Text:wght@400..700&family=Monsieur+La+Doulaise&display=swap');
+
+.bodoni-moda-sc-font {
+  font-family: "Bodoni Moda SC", serif;
+  font-optical-sizing: auto;
+  font-weight:900;
+  font-style: normal;
+}
+*{
+  font-family: "Bodoni Moda SC", serif !important;
+}  
+
 @keyframes spin {
   0% {
       transform: rotate(0deg);
@@ -26,3 +38,4 @@
   justify-content: center;
   align-items: center;
 }
+
