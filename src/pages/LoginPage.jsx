@@ -40,6 +40,10 @@ const LoginPage = () => {
   useEffect(() => {
 
     const redirect = async () => {
+<<<<<<< HEAD
+=======
+     
+>>>>>>> 6d19cd0d062539e384be9ae76224242d4e6c3bf0
       const user = auth.currentUser;
       if (user) {
         const role = await fetchUserRole(user.email);
