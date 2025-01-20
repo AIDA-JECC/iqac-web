@@ -1,0 +1,380 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+
+.mainContainer{
+    display: flex;
+}
+
+.profileSection{
+    width: 30vw;
+    box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+    background-color: aliceblue;
+}
+
+.profileDetails{
+    padding: 20px;
+    display: flex;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    background-color: rgb(254, 254, 255);
+    border-radius: 4px;
+}
+
+.subProfileDetails{
+    padding: 28px;
+    
+}
+
+.profileIcon{
+    height: clamp(5rem, 50vw, 6rem);
+}
+
+.name{
+    font-size:25px;
+    font-weight: bold;
+    margin: 4px;
+    color: #369cdc
+}
+
+.mail{
+    font-size:15px;
+    margin: 2px;
+    color: #90A0B7;
+}
+
+.contents{
+    padding:2vw;
+    width: 70vw;
+    background-color: #e9ebee;
+}
+/* 
+.all, .pending, .approved, .rejected{
+    width: 80%;
+    margin-bottom:3vh;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    padding: 14px;
+    border-radius:18px;
+    
+}
+.all:focus{
+    outline: 3px solid rgb(90, 227, 255);
+} 
+.pending:focus{
+    outline: 3px solid rgb(236, 255, 92);
+}
+
+.approved:focus{
+    outline: 3px solid rgb(109, 255, 122);
+}
+
+.rejected:focus{
+    outline: 3px solid rgb(255, 128, 128); 
+}
+
+  
+.all{
+    background-color: rgb(175, 242, 255);
+}
+.pending{
+    background-color: rgb(246, 255, 175);
+}
+.approved{
+    background-color: rgb(189, 255, 194);
+}
+.rejected{
+    background-color: rgb(241, 172, 172);
+} */
+
+.orange{
+    color: orange;
+}
+.green{
+    color: green;
+}
+.red{
+    color: red !important;
+}
+
+.all, .pending, .approved, .rejected{
+    width: 80%;
+    margin-bottom:3vh;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    padding: 14px;
+    border-radius:18px;
+    background-color: rgb(143, 129, 129);
+    color: white;
+}
+
+.all:focus , .pending:focus , .approved:focus , .rejected:focus {
+    outline: 2px solid rgb(76, 67, 67);
+    color: rgb(76, 67, 67);
+    background-color: white;
+    font-weight: bold;
+    
+}
+
+
+
+
+
+.signOut{
+    position: sticky;
+   width: 80%;
+   margin-bottom:3vh;
+   margin-top: 7vh;
+   box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+   border: none;
+   padding: 14px;
+   border-radius:18px;
+   background-color: rgb(44, 55, 87);
+   color: white;
+}
+
+.statusIcon{
+    height: 20px;
+    margin: auto;
+}
+
+.buttonList1{
+    margin-top: 20%;
+    text-align: center;
+    background-color: #90A0B7;
+}
+
+.buttonList2{
+    margin-top: 2px;
+    text-align: center;
+}
+
+
+.table{
+
+    border-top: 2px solid rgb(217, 188, 188);
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.tableHeader{
+    display: flex;
+    border: 1px solid rgb(207, 207, 207);
+    margin: 2px;
+    margin-bottom: 15px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tableHeader h3{
+    font-size:20px;
+    font-weight: bold;
+}
+
+.row{
+    border-radius: 4px;
+    margin:2px;
+    background-color:#e9ebee;
+}
+
+.columns{
+    padding: 8px;
+    color: #334D6E ;
+    background-color: #ffffff;
+    
+}
+
+.subjectBox{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.noData{
+    text-align: center;
+}
+
+input {
+    border: none;
+    border-bottom: 2px solid #000; 
+    outline: none; 
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top:10px;
+    padding-bottom: 10px; 
+    font-size: 16px; 
+    background-color: rgb(163, 139, 139);
+    color: white;
+    border-radius:20px;
+    width: 100%;
+    margin: 5px;
+    font-weight: 800;
+    
+  }
+
+input #file-upload-button{
+    width: 2px !important;
+    background-color:red;
+}
+
+.form{
+    padding: 20px;
+    border-radius: 10px;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 10px;
+}
+.uploadSection{
+    margin-top:4vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.uploadBtn{
+    margin-left: 10px;
+    width: 4vw;
+    height: 4vw;
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+
+}
+
+.inputs{
+    text-align: center;
+    margin-top: 10px;
+}
+
+.contents h1{
+    margin-left: 20px;
+}
+
+li h1{
+    font-size:35px;
+    color: rgb(14, 21, 82);
+    
+}
+
+
+.display{
+    display: flex;
+    justify-content:center;
+    border-radius: 16px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    margin-bottom:2vh;
+    margin-top:2vh;
+    background-color: #969494;
+}
+
+.feedback{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    padding: 2px;
+    width: 100%;
+    border-bottom-right-radius: 18px;
+    border-bottom-left-radius: 18px;
+    background-color: rgb(201, 178, 178);
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.FeedbackSpan{
+    font-weight: 800;
+}
+h4{
+
+    font-size:4vw;
+    color: #ffffff;
+}
+
+
+button{
+    cursor: pointer !important;
+  }
+
+  .deleteBtn{
+    position: absolute;
+    right: 10%;
+    bottom: -2.5vh;
+    min-height: 5vh;
+    min-width: 5vh;
+    border-radius: 50%;
+    padding:2px;
+    display: flex;justify-content: center;
+    align-items: center;
+  }
+
+  .editBtn{
+    position: absolute;
+    left: 10%;
+    bottom: -2.5vh;
+    min-height: 5vh;
+    min-width: 5vh;
+    border-radius: 50%;
+    padding:2px;
+    display: flex;justify-content: center;
+    align-items: center;
+  }
+
+.v{
+    font-family: inherit !important;
+}
+
+.arrow{
+    width: 10px !important;
+    height: 10px !important;
+}
+
+
+/*faculty */
+
+
+.tablef{
+    display: flex;
+    border-top: 2px solid rgb(217, 188, 188);
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+.tableHeaderf{
+    display: flex;
+    border: 1px solid rgb(207, 207, 207);
+    margin: 2px;
+    margin-bottom: 15px;
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.tableHeaderf h3{
+    font-size:20px;
+    font-weight: bold;
+}
+
+.rowf{
+    border-radius: 4px;
+    margin:2px;
+    background-color:#e9ebee;
+}
+
+.columnsf{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    width: 13vw;
+    padding: 8px;
+    color: #334D6E ;
+    background-color: #ffffff;
+    
+}
+
+.noDataf{
+    text-align: center;
+}

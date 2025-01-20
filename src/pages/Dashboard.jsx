@@ -1,9 +1,11 @@
-import React, { useState } from "react";
-import { getSubmissions, provideFeedback, approveSubmission } from "../services/questionPaperService";
+import { useState } from "react";
+import { getSubmissions,getApprovedSubmissions, provideFeedback, approveSubmission } from "../services/questionPaperService";
 
 const Dashboard = () => {
   const [feedback, setFeedback] = useState("");
-  const submissions = getSubmissions();
+  const submissions = getApprovedSubmissions("Pending");
+  console.log(submissions);
+  
 
   const handleFeedback = (id) => {
     provideFeedback(id, feedback);
@@ -16,7 +18,11 @@ const Dashboard = () => {
   };
 
   return (
+    <>
     <div>
+
+    </div>
+      <div>
       <h1>Dashboard</h1>
       {submissions.map((sub) => (
         <div key={sub.id}>
@@ -35,7 +41,8 @@ const Dashboard = () => {
           <button onClick={() => handleApprove(sub.id)}>Approve</button>
         </div>
       ))}
-    </div>
+      </div>
+    </>
   );
 };
 

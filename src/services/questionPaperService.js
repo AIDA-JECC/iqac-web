@@ -5,6 +5,7 @@ import {
   where,
   doc,
   updateDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 
@@ -14,7 +15,7 @@ export const uploadQuestionPaper = (data) => {
   submissions.push({ ...data, id: submissions.length + 1, status: "Pending" });
 };
 
-// export const getSubmissions = () => submissions;
+export const getSubmissions = () => submissions;
 // get submissions based on status
 // for Admin
 export const getApprovedSubmissions = async (status) => {
@@ -47,34 +48,197 @@ export const getSubmissionsByStausAndEmail = async (email, status) => {
     );
     const querySnapshot = await getDocs(submissionsQuery);
 
-    const documents = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const documents = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
 
-    console.log("Approved Submissions:", documents);
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+
+    console.log("Submissions:", status, documents);
     return documents;
   } catch (error) {
-    console.error("Error fetching approved submissions:", error);
+    console.error("Error fetching submissions by status and email:", error);
     return [];
   }
 };
 
-// for teachers to get all the submission submitted by them
-export const getSubmissionsByTeacher = async (email) => {
+
+// for teachers to get details by id
+export const getById = async (email) => { 
   try {
     const collectionRef = collection(db, "uploads");
     const q = query(collectionRef, where("uploadedBy", "==", email));
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+
+    // Filter the documents to only include the one with the matching id
+      console.log("Documents fetched:", querySnapshot.docs.map((doc) => doc.id));
+      const filteredDocument = querySnapshot.docs.find((doc) => doc.id === "AhQFRyo60ZMRPARE6RRs");
+      if (filteredDocument) {
+        console.log("Filtered Document:", filteredDocument.data());
+        return {
+          id: filteredDocument.id,
+          ...filteredDocument.data(),
+        };
+      } else {
+        console.log("No document found with the given ID.");
+        return null;
+      }
+
   } catch (error) {
     console.error("Error fetching filtered submissions:", error);
     throw error;
   }
 };
+
+
+
+
+
+// for teachers to get all the submission submitted by them
+// export const getSubmissionsByTeacher = async (email) => {
+//   try {
+//     const collectionRef = collection(db, "uploads");
+//     const q = query(collectionRef, where("uploadedBy", "==", email));
+//     const data = doc.data();
+//     const timestamp = data.timestamp ? data.timestamp.toDate() : null;
+//     const formattedDateTime = timestamp.toLocaleString(); 
+//     const [date, time] = formattedDateTime.split(", ");
+//     const querySnapshot = await getDocs(q);
+//     return querySnapshot.docs.map((doc) => ({
+//       id: doc.id,
+//       ...doc.data(),
+//       date,
+//       time,
+//     }));
+//   } catch (error) {
+//     console.error("Error fetching filtered submissions:", error);
+//     throw error;
+//   }
+// };
+
+// for teachers to get all the submission submitted by them
+// export const getSubmissionsByTeacher = async (email) => {
+//   try {
+//     const collectionRef = collection(db, "uploads");
+//     const q = query(collectionRef, where("uploadedBy", "==", email));
+//     const querySnapshot = await getDocs(q);
+
+//     return querySnapshot.docs.map((doc) => {
+//       const data = doc.data();
+//       const timestamp = data.timestamp ? data.timestamp.toDate() : null;
+
+//       let date = null;
+//       let time = null;
+
+//       if (timestamp) {
+//         const formattedDateTime = timestamp.toLocaleString(); // Example: "1/19/2025, 2:45:30 PM"
+//         [date, time] = formattedDateTime.split(", "); // Split into date and time
+//       }
+
+//       console.log(date, time);
+      
+
+//       return {
+//         id: doc.id,
+//         ...data,
+//         date, // Include date as a separate field
+//         time, // Include time as a separate field
+//       };
+//     });
+//   } catch (error) {
+//     console.error("Error fetching filtered submissions:", error);
+//     throw error;
+//   }
+// };
+
+// export const getSubmissionsByTeacher = async (email) => {
+//   try {
+//     const collectionRef = collection(db, "uploads");
+//     const q = query(collectionRef, where("uploadedBy", "==", email));
+//     const querySnapshot = await getDocs(q);
+
+//     return querySnapshot.docs.map((doc) => {
+//       const data = doc.data();
+//       const timestamp = data._timestamp ? data._timestamp.toDate() : null;
+
+//       let date = null;
+//       let time = null;
+
+//       if (timestamp) {
+//         const formattedDateTime = timestamp.toLocaleString(); // Formats to "MM/DD/YYYY, HH:MM:SS AM/PM"
+//         [date, time] = formattedDateTime.split(", "); // Splits into date and time
+//       } else {
+//         console.warn(`Missing timestamp for document ID: ${doc.id}`);
+//       }
+
+//       return {
+//         id: doc.id,
+//         ...data,
+//         date, // Example: "01/19/2025"
+//         time, // Example: "2:45:30 PM"
+//       };
+//     });
+//   } catch (error) {
+//     console.error("Error fetching filtered submissions:", error);
+//     throw error;
+//   }
+// };
+
+export const getSubmissionsByTeacher = async (email) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("uploadedBy", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching filtered submissions:", error);
+    throw error;
+  }
+};
+
 
 export const provideFeedback = async (id, feedback) => {
   try {
@@ -112,3 +276,84 @@ export const approveSubmission = async (id) => {
 //     console.error("Error updating user role:", error);
 //   }
 // };
+
+
+export const getAllSubmissions = async () => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const querySnapshot = await getDocs(collectionRef);
+
+
+    const documents = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+
+    console.log("All Submissions:", documents);
+    return documents;
+  } catch (error) {
+    console.error("Error fetching all submissions:", error);
+    return [];
+  }
+};
+
+export const getAllSubmissionsByStatus = async (status) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("status", "==", status));
+    const querySnapshot = await getDocs(q);
+
+    
+
+    const documents = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+
+    console.log("All Submissions:", documents);
+    return documents;
+  } catch (error) {
+    console.error("Error fetching all submissions:", error);
+    return [];
+  }
+};
