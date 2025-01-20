@@ -244,7 +244,7 @@ export const provideFeedback = async (id, feedback) => {
   try {
     const docRef = doc(db, "uploads", id);
     await updateDoc(docRef, { feedback });
-    await updateDoc(docRef, { status: "Pending Revision" });
+    await updateDoc(docRef, { status: "Rejected" });
 
     console.log(`Feedback added to submission with ID: ${id}`);
   } catch (error) {

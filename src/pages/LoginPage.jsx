@@ -66,7 +66,7 @@ const LoginPage = () => {
 
       const userRole = await fetchUserRole(user.email);
       if (userRole === "faculty") {
-        navigate("/upload");
+        navigate("/faculty");
       } else if (userRole === "admin") {
         navigate("/admin-dashboard");
       } else {
@@ -90,7 +90,7 @@ const LoginPage = () => {
 
       const userRole = await fetchUserRole(email);
       if (userRole === "faculty") {
-        navigate("/upload");
+        navigate("/faculty");
       } else if (userRole === "admin") {
         navigate("/admin-dashboard");
       } else {

@@ -201,6 +201,9 @@ const FacultyPage = () => {
           }}
           >Sign Out</button>
           </li>
+          <li>
+            <button className={styles.signOut} onClick={ ()=>{navigate("/admin-dashboard")}} >See admin (temp button )</button>
+          </li>
         </ul>
 
       </div>
