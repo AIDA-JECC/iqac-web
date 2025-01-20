@@ -42,8 +42,10 @@ const Dashboard = () => {
   const deleteBtn = <button  className={styles.deleteBtn}><svg viewBox="0 0 1024 1024" class="icon" version="1.1" xmlns="http://www.w3.org/2000/svg" fill="#000000"><path d="M667.8 362.1H304V830c0 28.2 23 51 51.3 51h312.4c28.4 0 51.4-22.8 51.4-51V362.2h-51.3z" fill="#ffffff"></path><path d="M750.3 295.2c0-8.9-7.6-16.1-17-16.1H289.9c-9.4 0-17 7.2-17 16.1v50.9c0 8.9 7.6 16.1 17 16.1h443.4c9.4 0 17-7.2 17-16.1v-50.9z" fill="#ffffff"></path><path d="M733.3 258.3H626.6V196c0-11.5-9.3-20.8-20.8-20.8H419.1c-11.5 0-20.8 9.3-20.8 20.8v62.3H289.9c-20.8 0-37.7 16.5-37.7 36.8V346c0 18.1 13.5 33.1 31.1 36.2V830c0 39.6 32.3 71.8 72.1 71.8h312.4c39.8 0 72.1-32.2 72.1-71.8V382.2c17.7-3.1 31.1-18.1 31.1-36.2v-50.9c0.1-20.2-16.9-36.8-37.7-36.8z m-293.5-41.5h145.3v41.5H439.8v-41.5z m-146.2 83.1H729.5v41.5H293.6v-41.5z m404.8 530.2c0 16.7-13.7 30.3-30.6 30.3H355.4c-16.9 0-30.6-13.6-30.6-30.3V382.9h373.6v447.2z" fill="#c81919"></path><path d="M511.6 798.9c11.5 0 20.8-9.3 20.8-20.8V466.8c0-11.5-9.3-20.8-20.8-20.8s-20.8 9.3-20.8 20.8v311.4c0 11.4 9.3 20.7 20.8 20.7zM407.8 798.9c11.5 0 20.8-9.3 20.8-20.8V466.8c0-11.5-9.3-20.8-20.8-20.8s-20.8 9.3-20.8 20.8v311.4c0.1 11.4 9.4 20.7 20.8 20.7zM615.4 799.6c11.5 0 20.8-9.3 20.8-20.8V467.4c0-11.5-9.3-20.8-20.8-20.8s-20.8 9.3-20.8 20.8v311.4c0 11.5 9.3 20.8 20.8 20.8z" fill="#c81919"></path></svg></button>
   const editBtn = <button  className={styles.editBtn}><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M8.56078 20.2501L20.5608 8.25011L15.7501 3.43945L3.75012 15.4395V20.2501H8.56078ZM15.7501 5.56077L18.4395 8.25011L16.5001 10.1895L13.8108 7.50013L15.7501 5.56077ZM12.7501 8.56079L15.4395 11.2501L7.93946 18.7501H5.25012L5.25012 16.0608L12.7501 8.56079Z" fill="#107023"></path></svg></button>
  
-  const submitBtn = (sub)=>{ return (<button onClick={() => handleFeedback(sub.id)} className={styles.editBtn}>rejcted</button> )}
-  const approveBtn = (sub)=>{ return (<button onClick={() => handleApprove(sub.id)} className={styles.deleteBtn}>approved</button> )}
+  const submitBtn = (sub)=>{ return (<button onClick={() => handleFeedback(sub.id)} className={styles.submitBtn}>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M7.25 7C7.25 7.41421 7.58579 7.75 8 7.75H16C16.4142 7.75 16.75 7.41421 16.75 7C16.75 6.58579 16.4142 6.25 16 6.25H8C7.58579 6.25 7.25 6.58579 7.25 7Z" fill="#ffffff"></path> <path d="M12 17.75C12.4142 17.75 12.75 17.4142 12.75 17V11.8107L14.4697 13.5303C14.7626 13.8232 15.2374 13.8232 15.5303 13.5303C15.8232 13.2374 15.8232 12.7626 15.5303 12.4697L12.5303 9.46967C12.3897 9.32902 12.1989 9.25 12 9.25C11.8011 9.25 11.6103 9.32902 11.4697 9.46967L8.46967 12.4697C8.17678 12.7626 8.17678 13.2374 8.46967 13.5303C8.76256 13.8232 9.23744 13.8232 9.53033 13.5303L11.25 11.8107V17C11.25 17.4142 11.5858 17.75 12 17.75Z" fill="#ffffff"></path> <path fill-rule="evenodd" clip-rule="evenodd" d="M11.9426 1.25C9.63423 1.24999 7.82519 1.24998 6.4137 1.43975C4.96897 1.63399 3.82895 2.03933 2.93414 2.93414C2.03933 3.82895 1.63399 4.96897 1.43975 6.41371C1.24998 7.82519 1.24999 9.63423 1.25 11.9426V12.0574C1.24999 14.3658 1.24998 16.1748 1.43975 17.5863C1.63399 19.031 2.03933 20.1711 2.93414 21.0659C3.82895 21.9607 4.96897 22.366 6.4137 22.5603C7.82519 22.75 9.63423 22.75 11.9426 22.75H12.0574C14.3658 22.75 16.1748 22.75 17.5863 22.5603C19.031 22.366 20.1711 21.9607 21.0659 21.0659C21.9607 20.1711 22.366 19.031 22.5603 17.5863C22.75 16.1748 22.75 14.3658 22.75 12.0574V11.9426C22.75 9.63423 22.75 7.82519 22.5603 6.41371C22.366 4.96897 21.9607 3.82895 21.0659 2.93414C20.1711 2.03933 19.031 1.63399 17.5863 1.43975C16.1748 1.24998 14.3658 1.24999 12.0574 1.25H11.9426ZM3.9948 3.9948C4.56445 3.42514 5.33517 3.09825 6.61358 2.92637C7.91356 2.75159 9.62177 2.75 12 2.75C14.3782 2.75 16.0864 2.75159 17.3864 2.92637C18.6648 3.09825 19.4355 3.42514 20.0052 3.9948C20.5749 4.56445 20.9018 5.33517 21.0736 6.61358C21.2484 7.91356 21.25 9.62178 21.25 12C21.25 14.3782 21.2484 16.0864 21.0736 17.3864C20.9018 18.6648 20.5749 19.4355 20.0052 20.0052C19.4355 20.5749 18.6648 20.9018 17.3864 21.0736C16.0864 21.2484 14.3782 21.25 12 21.25C9.62177 21.25 7.91356 21.2484 6.61358 21.0736C5.33517 20.9018 4.56445 20.5749 3.9948 20.0052C3.42514 19.4355 3.09825 18.6648 2.92637 17.3864C2.75159 16.0864 2.75 14.3782 2.75 12C2.75 9.62178 2.75159 7.91356 2.92637 6.61358C3.09825 5.33517 3.42514 4.56445 3.9948 3.9948Z" fill="#ffffff"></path> </g></svg>
+  </button> )}
+  const approveBtn = (sub)=>{ return (<button onClick={() => handleApprove(sub.id)} className={styles.approveBtn}>Approve</button> )}
   
   useEffect(() => {
     if(isDropdownVisible1){setMode("admin")}
@@ -362,6 +364,9 @@ const Dashboard = () => {
                   Sign Out
           </button>
         </li>
+        <li>
+            <button className={styles.signOut} onClick={ ()=>{navigate("/faculty")}} >See Faculty (temp button )</button>
+        </li>
       </ul>
 
       </div>
@@ -445,31 +450,48 @@ const Dashboard = () => {
             <div key={sub.id} className= {styles.row}>
               
 
-              <div className={styles.table}>
-                <div className={styles.subjectBox}>
-                <div className= {styles.columns}><h3>Date : {sub.date}</h3></div>
-                  <div className= {styles.columns}><h3>Subject Code : {sub.subjectCode}</h3></div>
-                  <div className= {styles.columns}><h3>Course Name  : {sub.courseName}</h3></div>
-                  <div className= {styles.columns}> <h3>Time : {sub.time}</h3></div>
+              <div className={styles.card}>
+                <div className={styles.header}>
+                  <div className={styles.subjectInfo}>
+                    <h3 className={styles.courseName}>{sub.courseName}</h3>
+                    <h3 className={styles.subjectCode}>{sub.subjectCode}</h3>
+                  </div>
+                  <div className={styles.action}>
+                    {sub.status === "Pending" ? approveBtn(sub) : <></>}
+                  </div>
                 </div>
-                <div className= {styles.columns}><h3>Department  : {sub.dept}</h3></div>
-                
-                <div className= {styles.columns}><h3>Status : {getStatus(sub.status)}</h3></div>
-                <div className= {styles.columns}> <h3>Faculty Name : {sub.teacherName}</h3></div>
-                <div className= {styles.columns}> <h3>Facutly Email ID : {sub.uploadedBy}</h3></div>
+                <div className={styles.details}>
+                  <div className={styles.dateTime}>
+                      <h3>Faculty : {sub.teacherName}</h3>
+                      <h3>Department : {sub.dept}</h3>
+                      <div className={styles.file}>
+                        <h3>File : </h3> <button>{sub.fileName}</button>
+                      </div>
+                      <h3>Status : {sub.status}</h3>
+                    </div>
+                    
+                    <div className={styles.dateTime}>
+                      <h3>Date: {sub.date}</h3>
+                      <h3>Time: {sub.time}</h3>
+                    </div>
+                </div>
               </div>
+
               
 
 
-              <div className= {styles.feedback}><input
-                  type="text"
-                  placeholder="Provide Feedback"
-                  value={feedback[sub.id] || ""}
-                  onChange={(e) => handleFeedbackChange(sub.id, e.target.value)}
-                /> {(sub.status == "Pending") ? [submitBtn(sub) , approveBtn(sub)] : <></>} </div>
+              {(sub.status === "Pending")? 
+                <div className= {styles.feedback}>
                   
-               
-              
+                  <input
+                    type="text"
+                    placeholder="Provide Feedback"
+                    value={feedback[sub.id] || ""}
+                    onChange={(e) => handleFeedbackChange(sub.id, e.target.value)}
+                  />{(sub.status == "Pending") ? submitBtn(sub) : <></>} 
+                </div> : <div className= {styles.feedback}><h3> <span className= {styles.FeedbackSpan}>Feedback provided  :</span>  {sub.feedback ? sub.feedback : "...." }</h3> {(sub.status == "Pending") ? [editBtn , deleteBtn] : <></>} </div> 
+              }
+                              
               
               
               
@@ -482,6 +504,8 @@ const Dashboard = () => {
       </div> 
       
       :
+
+
 
       <div className={styles.contents}>
       <div className={styles.display}>

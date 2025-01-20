@@ -139,7 +139,6 @@
 .buttonList1{
     margin-top: 20%;
     text-align: center;
-    background-color: #90A0B7;
 }
 
 .buttonList2{
@@ -149,7 +148,7 @@
 
 
 .table{
-
+    width: 100%;
     border-top: 2px solid rgb(217, 188, 188);
     margin-top: 10px;
     overflow: hidden;
@@ -180,6 +179,7 @@
     background-color: #ffffff;
     
 }
+
 
 .subjectBox{
     width: 100%;
@@ -258,6 +258,7 @@ input #file-upload-button{
 li h1{
     font-size:35px;
     color: rgb(14, 21, 82);
+    border: 1px solid rgb(14, 21, 82);
     
 }
 
@@ -277,7 +278,8 @@ li h1{
     position: relative;
     display: flex;
     justify-content: center;
-    padding: 2px;
+    align-items: center;
+    padding: 5px;
     width: 100%;
     border-bottom-right-radius: 18px;
     border-bottom-left-radius: 18px;
@@ -378,3 +380,80 @@ button{
 .noDataf{
     text-align: center;
 }
+
+.submitBtn{
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0);
+    width: 5vh;
+    height: 5vh;
+}
+
+.card {
+    border-top: 1px solid #c6bcbc;
+    border-top-right-radius: 8px;
+    border-top-left-radius: 8px;
+    padding: 16px;
+    background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: grid;
+    grid-template-rows: auto 1fr;
+    row-gap: 12px;
+    margin-top: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .subjectInfo {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .courseName {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .subjectCode {
+    font-size: 1rem;
+    margin: 0;
+    color: #555;
+  }
+
+  .file{
+    display: flex;
+  }
+  
+  .file button{
+    padding-left:4px;
+    padding-right:4px;
+  }
+
+  .action {
+    align-self: flex-start;
+  }
+
+  .details{
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .dateTime {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .dateTime h3 {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+  }
+  
