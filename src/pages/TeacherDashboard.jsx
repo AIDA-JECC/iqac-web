@@ -34,6 +34,8 @@ export const TeacherDashboard = () => {
   const [teacherName, setTeacherName] = useState("");
   const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
+  const [showFilterOptions, setShowFilterOptions] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -55,6 +57,29 @@ export const TeacherDashboard = () => {
 
     fetchSubmissions();
   }, []);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const toggleFilterOptions = () => {
+    setShowFilterOptions((prev) => !prev);
+  };
+
+  const handleFilterClick = (status) => {
+    setFilterStatus(status === filterStatus ? "" : status); // Toggle filter
+  };
+
+  const filteredSubjects = submissions.filter((row) => {
+    const matchesSearch = row.courseName
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus
+      ? row.status.toLowerCase() === filterStatus.toLowerCase()
+      : true;
+
+    return matchesSearch && matchesFilter;
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,17 +145,17 @@ export const TeacherDashboard = () => {
     },
   ];
 
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-  };
+  // const handleSearch = (e) => {
+  //   setSearchTerm(e.target.value);
+  // };
 
   const handleViewClick = (subject) => {
     console.log(`Viewing details for ${subject}`);
   };
 
-  const filteredSubjects = submissions.filter((row) =>
-    row.courseName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredSubjects = submissions.filter((row) =>
+  //   row.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className={styles.dashboardContainer}>
@@ -206,10 +231,42 @@ export const TeacherDashboard = () => {
             >
               +
             </button>
-            <button className={styles.filterButton} aria-label="Filter items">
+            <button
+              className={styles.filterButton}
+              aria-label="Filter items"
+              onClick={toggleFilterOptions}
+            >
               Filter
             </button>
           </div>
+          {showFilterOptions && (
+            <div className={styles.filterOptions}>
+              <button
+                className={`${styles.filterOption} ${
+                  filterStatus === "Pending" ? styles.activeFilter : ""
+                }`}
+                onClick={() => handleFilterClick("Pending")}
+              >
+                Pending
+              </button>
+              <button
+                className={`${styles.filterOption} ${
+                  filterStatus === "Approved" ? styles.activeFilter : ""
+                }`}
+                onClick={() => handleFilterClick("Approved")}
+              >
+                Approved
+              </button>
+              <button
+                className={`${styles.filterOption} ${
+                  filterStatus === "Rejected" ? styles.activeFilter : ""
+                }`}
+                onClick={() => handleFilterClick("Rejected")}
+              >
+                Rejected
+              </button>
+            </div>
+          )}
 
           <div className={styles.tableHeader} role="rowheader">
             <div className={styles.headerCell}>Subject</div>
@@ -225,9 +282,11 @@ export const TeacherDashboard = () => {
                 key={index}
                 {...row}
                 onViewClick={() => handleViewClick(row.courseName)}
-                statusColor={
+                statusColor = {
                   row.status === "Approved"
                     ? STATUS_COLORS.APPROVED
+                    : row.status === "Rejected"
+                    ? STATUS_COLORS.REJECTED
                     : STATUS_COLORS.PENDING
                 }
               />
