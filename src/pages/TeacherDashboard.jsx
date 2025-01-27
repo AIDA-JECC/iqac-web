@@ -163,7 +163,7 @@ export const TeacherDashboard = () => {
         <aside className={styles.sidebar}>
           <div className={styles.sidebarContent}>
             <div className={styles.username}>
-              {extractName(auth.currentUser.email)}
+              IQAC
             </div>
             <UserProfile
               name={extractName(auth.currentUser.email)}
