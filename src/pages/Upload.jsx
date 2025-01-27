@@ -1,0 +1,202 @@
+import { useState, useRef } from "react";
+import styles from "./Upload.module.css";
+import { db, auth } from "../firebase"; // Firebase configuration
+import { addDoc, collection } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
+import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
+import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
+
+const extractName = (email) => {
+  const namePart = email.split("@")[0];
+  const firstName = namePart.split(".")[0];
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+};
+
+export const NoteEditor = () => {
+  const [subjectName, setSubjectName] = useState("Subject Name");
+  const [subjectCode, setSubjectCode] = useState("");
+  const [description, setDescription] = useState("");
+  const [dropdownValues, setDropdownValues] = useState({
+    Department: "AD",
+    Year: "2",
+    Semester: "4",
+  });
+  const [file, setFile] = useState(null);
+  const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleDropdownChange = (title, value) => {
+    setDropdownValues((prev) => ({ ...prev, [title]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+
+      // Generate a URL for the selected file
+      if (selectedFile.type === "application/pdf") {
+        const url = URL.createObjectURL(selectedFile);
+        setFileURL(url);
+      } else {
+        setFileURL(null); // Reset the preview if the file is not a PDF
+      }
+    }
+  };
+
+  const handleFileUpload = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!subjectName || !subjectCode || !file) {
+      toast.error("Please fill out all required fields.");
+      return;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, "uploads"), {
+        subjectCode,
+        courseName: subjectName,
+        description,
+        teacherName: extractName(auth.currentUser.email),
+        fileName: file.name,
+        uploadedBy: auth.currentUser.email,
+        status: "Pending",
+        dept: dropdownValues.Department,
+        year: dropdownValues.Year,
+        semester: dropdownValues.Semester,
+        uploadedAt: new Date(),
+      });
+
+      toast.success("File uploaded successfully!");
+      console.log("Document written with ID: ", docRef.id);
+
+      setSubjectCode("");
+      setSubjectName("");
+      setDescription("");
+      setDropdownValues({ Department: "AD", Year: "2", Semester: "4" });
+      setFile(null);
+      setFileURL(null);
+
+      navigate("/faculty");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Upload failed. Please check your permissions.");
+    }
+  };
+
+  return (
+    <div className={styles.editorContainer}>
+      <form onSubmit={handleSubmit}>
+        {/* Header Section */}
+        <img
+          loading="lazy"
+          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d53af9af6a4e53d74d06edc1f3049266467905105dc543ead92f679583e8d6c?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+          className={styles.headerIcon}
+          alt="Note Editor Icon"
+        />
+        <div className={styles.contentWrapper}>
+          <h1 className={styles.userName}>
+            Welcome, {extractName(auth.currentUser.email)}
+          </h1>
+          <div className={styles.mainContent}>
+            <div className={styles.contentGrid}>
+              {/* Preview Section */}
+              <div className={styles.previewColumn}>
+                <div className={styles.previewSection}>
+                  <h2 className={styles.previewTitle}>Preview</h2>
+                  <div className={styles.previewBox}>
+                    {fileURL ? (
+                      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                        <Viewer fileUrl={fileURL} />
+                      </Worker>
+                    ) : (
+                      <p>No file selected</p>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    style={{ display: "none" }}
+                    accept="application/pdf"
+                  />
+                  <button
+                    type="button"
+                    className={styles.uploadButton}
+                    onClick={handleFileUpload}
+                  >
+                    Upload File
+                  </button>
+                </div>
+              </div>
+
+              {/* Details Section */}
+              <div className={styles.detailsColumn}>
+                <div className={styles.detailsSection}>
+                  <h2 className={styles.detailsTitle}>Details</h2>
+                  <div className={styles.subjectContainer}>
+                    <label
+                      htmlFor="subjectName"
+                      className={styles.subjectTitle}
+                    >
+                      Subject Title:
+                    </label>
+                    <input
+                      id="subjectName"
+                      type="text"
+                      value={subjectName}
+                      onChange={(e) => setSubjectName(e.target.value)}
+                      className={styles.subjectInput}
+                      required
+                    />
+                  </div>
+                  <div className={styles.divider}></div>
+                  <div className={styles.subjectContainer}>
+                    <label
+                      htmlFor="subjectCode"
+                      className={styles.subjectTitle}
+                    >
+                      Subject Code:
+                    </label>
+                    <input
+                      id="subjectCode"
+                      type="text"
+                      value={subjectCode}
+                      onChange={(e) => setSubjectCode(e.target.value)}
+                      className={styles.subjectInput}
+                      required
+                    />
+                  </div>
+                  <div className={styles.divider}></div>
+                  <div className={styles.dropdownRow}>{/* Dropdowns */}</div>
+                  <div>
+                    <label htmlFor="description">Description:</label>
+                    <textarea
+                      id="description"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className={styles.descriptionBox}
+                      rows={4}
+                    />
+                  </div>
+                  <button type="submit" className={styles.sendButton}>
+                    Send
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default NoteEditor;
