@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
+import TeacherFeedback from "./pages/TeacherFeedback.jsx";
 import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard page
 import Dashboard from "./pages/Dashboard";
 import NoteEditor from "./pages/Upload.jsx";
@@ -68,6 +69,12 @@ const App = () => {
             <ProtectedRoute requiredRole="faculty">
               <NoteEditor />
             </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/view/:id"
+          element={
+              <TeacherFeedback />
           }
         />
         <Route

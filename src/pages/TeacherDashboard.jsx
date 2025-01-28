@@ -149,8 +149,11 @@ export const TeacherDashboard = () => {
   //   setSearchTerm(e.target.value);
   // };
 
-  const handleViewClick = (subject) => {
-    console.log(`Viewing details for ${subject}`);
+  const handleViewClick = (id) => {
+
+
+    // Navigate to the desired page with the ID
+    navigate(`/view/${id}`);
   };
 
   // const filteredSubjects = submissions.filter((row) =>
@@ -162,9 +165,7 @@ export const TeacherDashboard = () => {
       <div className={styles.contentWrapper}>
         <aside className={styles.sidebar}>
           <div className={styles.sidebarContent}>
-            <div className={styles.username}>
-              IQAC
-            </div>
+            <div className={styles.username}>IQAC</div>
             <UserProfile
               name={extractName(auth.currentUser.email)}
               email={auth.currentUser.email}
@@ -281,8 +282,8 @@ export const TeacherDashboard = () => {
               <SubjectRow
                 key={index}
                 {...row}
-                onViewClick={() => handleViewClick(row.courseName)}
-                statusColor = {
+                onViewClick={() => handleViewClick(row.id)}
+                statusColor={
                   row.status === "Approved"
                     ? STATUS_COLORS.APPROVED
                     : row.status === "Rejected"

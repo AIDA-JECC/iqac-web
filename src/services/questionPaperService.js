@@ -6,6 +6,7 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  getDoc 
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 
@@ -81,37 +82,57 @@ export const getSubmissionsByStausAndEmail = async (email, status) => {
   }
 };
 
-
 // for teachers to get details by id
-export const getById = async (email) => { 
+export const getById = async (email) => {
   try {
     const collectionRef = collection(db, "uploads");
     const q = query(collectionRef, where("uploadedBy", "==", email));
     const querySnapshot = await getDocs(q);
 
     // Filter the documents to only include the one with the matching id
-      console.log("Documents fetched:", querySnapshot.docs.map((doc) => doc.id));
-      const filteredDocument = querySnapshot.docs.find((doc) => doc.id === "AhQFRyo60ZMRPARE6RRs");
-      if (filteredDocument) {
-        console.log("Filtered Document:", filteredDocument.data());
-        return {
-          id: filteredDocument.id,
-          ...filteredDocument.data(),
-        };
-      } else {
-        console.log("No document found with the given ID.");
-        return null;
-      }
-
+    console.log(
+      "Documents fetched:",
+      querySnapshot.docs.map((doc) => doc.id)
+    );
+    const filteredDocument = querySnapshot.docs.find(
+      (doc) => doc.id === "AhQFRyo60ZMRPARE6RRs"
+    );
+    if (filteredDocument) {
+      console.log("Filtered Document:", filteredDocument.data());
+      return {
+        id: filteredDocument.id,
+        ...filteredDocument.data(),
+      };
+    } else {
+      console.log("No document found with the given ID.");
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching filtered submissions:", error);
     throw error;
   }
 };
+export const getBySubmissionId = async (id) => {
+  try {
+    // Use the `doc()` method to point to the specific document by its ID
+    const docRef = doc(db, "uploads", id);
+    const docSnap = await getDoc(docRef);
 
-
-
-
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      return {
+        id: docSnap.id,
+        ...docSnap.data(),
+      };
+    } else {
+      console.log("No document found with the given ID.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching document by ID:", error);
+    throw error;
+  }
+};
 
 // for teachers to get all the submission submitted by them
 // export const getSubmissionsByTeacher = async (email) => {
@@ -120,7 +141,7 @@ export const getById = async (email) => {
 //     const q = query(collectionRef, where("uploadedBy", "==", email));
 //     const data = doc.data();
 //     const timestamp = data.timestamp ? data.timestamp.toDate() : null;
-//     const formattedDateTime = timestamp.toLocaleString(); 
+//     const formattedDateTime = timestamp.toLocaleString();
 //     const [date, time] = formattedDateTime.split(", ");
 //     const querySnapshot = await getDocs(q);
 //     return querySnapshot.docs.map((doc) => ({
@@ -155,7 +176,6 @@ export const getById = async (email) => {
 //       }
 
 //       console.log(date, time);
-      
 
 //       return {
 //         id: doc.id,
@@ -239,7 +259,6 @@ export const getSubmissionsByTeacher = async (email) => {
   }
 };
 
-
 export const provideFeedback = async (id, feedback) => {
   try {
     const docRef = doc(db, "uploads", id);
@@ -277,12 +296,10 @@ export const approveSubmission = async (id) => {
 //   }
 // };
 
-
 export const getAllSubmissions = async () => {
   try {
     const collectionRef = collection(db, "uploads");
     const querySnapshot = await getDocs(collectionRef);
-
 
     const documents = querySnapshot.docs.map((doc) => {
       const data = doc.data();
@@ -322,8 +339,6 @@ export const getAllSubmissionsByStatus = async (status) => {
     const collectionRef = collection(db, "uploads");
     const q = query(collectionRef, where("status", "==", status));
     const querySnapshot = await getDocs(q);
-
-    
 
     const documents = querySnapshot.docs.map((doc) => {
       const data = doc.data();
