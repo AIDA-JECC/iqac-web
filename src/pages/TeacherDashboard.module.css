@@ -5,6 +5,7 @@
   font-family: "Poppins";
 }
 
+
 .contentWrapper {
   display: flex;
   width: 100%;
@@ -381,7 +382,26 @@
   gap: 10px;
   margin-bottom: 20px;
 }
+.signout {
+  background-color: #ff4b5c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+.signoutContainer {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+.signout:hover {
+  background-color: #ff1f3a;
+}
 
+/* 
 @media (max-width: 991px) {
   .contentWrapper {
     flex-direction: column;
