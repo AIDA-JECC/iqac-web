@@ -111,10 +111,10 @@ const LoginPage = () => {
 
   return (
     <div className={styles.LoginPage}>
-      <img className={styles.LoginLft} src="src/assets/jec_grey.jpg" />
+      <img className={styles.LoginLft} src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_grey.jpg?updatedAt=1738127877033" />
       <div className={styles.LoginCard}>
         <h5 className={styles.txt}>IQAC | JYOTHI</h5>
-        <img className={styles.jecLogo} src="src/assets/jec_logo.png" />
+        <img className={styles.jecLogo} src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_logo.png?updatedAt=1738127876326" />
   
         {/* Google Sign-In */}
   
