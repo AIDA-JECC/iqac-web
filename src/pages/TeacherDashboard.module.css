@@ -144,6 +144,7 @@
 }
 
 .footerIcon {
+  filter: invert(19%) sepia(86%) saturate(7486%) hue-rotate(357deg) brightness(93%) contrast(113%);
   width: 14px;
   height: 14px;
 }
@@ -401,7 +402,7 @@
   background-color: #ff1f3a;
 }
 
-/* 
+
 @media (max-width: 991px) {
   .contentWrapper {
     flex-direction: column;
@@ -433,4 +434,4 @@
     flex-wrap: wrap;
   }
 }
-*/
+

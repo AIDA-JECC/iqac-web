@@ -11,7 +11,8 @@ import { addDoc, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
-  getSubmissionsByTeacher
+  getSubmissionsByDepartment,
+  getUserDepartment,
 } from "../services/questionPaperService";
 import { Sidebar } from "../components/Sidebar";
 
@@ -26,7 +27,7 @@ const extractName = (email) => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 };
 
-export const TeacherDashboard = () => {
+export const ScrutinyDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const [subjectCode, setSubjectCode] = useState("");
@@ -42,14 +43,8 @@ export const TeacherDashboard = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        // await updateUserRole(auth.currentUser.email)
-        const data = await getSubmissionsByTeacher(auth.currentUser.email);
-        //console.log("TEST appproved:",await getSubmissionsByStausAndEmail(auth.currentUser.email,"Approved"))
-        console.log(auth.currentUser);
-
-        console.log(extractName(auth.currentUser.email));
-
-        console.log("Previous teacher data: ", data);
+        const dept = await getUserDepartment(auth.currentUser.email)
+        const data = await getSubmissionsByDepartment(dept);
         setSubmissions(data);
       } catch (error) {
         console.error("Error fetching submissions:", error);
@@ -124,8 +119,13 @@ export const TeacherDashboard = () => {
   };
 
   const handleViewClick = (id) => {
-    navigate(`/panel /${id}`);
+    // Navigate to the desired page with the ID
+    navigate(`/scrutiny/view/${id}`);
   };
+
+  // const filteredSubjects = submissions.filter((row) =>
+  //   row.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className={styles.dashboardContainer}>
@@ -133,7 +133,7 @@ export const TeacherDashboard = () => {
         <Sidebar submissions={submissions} />
 
         <main className={styles.mainContent}>
-          <h1 className={styles.welcomeTitle}>Welcome</h1>
+          <h1 className={styles.welcomeTitle}>ScrutinyDashboard</h1>
           <div className={styles.signoutContainer}>
             <button className={styles.signout} onClick={handleSignOut}>
               Sign Out
@@ -231,4 +231,4 @@ export const TeacherDashboard = () => {
   );
 };
 
-export default TeacherDashboard;
+export default ScrutinyDashboard;

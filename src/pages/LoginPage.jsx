@@ -47,7 +47,7 @@ const LoginPage = () => {
         if (role === "faculty") {
           navigate("/faculty");
         } else if (role === "admin") {
-          navigate("/admin-dashboard");
+          navigate("/admin");
         }
       }
     };
@@ -68,7 +68,7 @@ const LoginPage = () => {
       if (userRole === "faculty") {
         navigate("/faculty");
       } else if (userRole === "admin") {
-        navigate("/admin-dashboard");
+        navigate("/admin");
       } else {
         toast.error("Unauthorized role.");
         await signOut(auth); // Sign out unauthorized users
@@ -92,7 +92,7 @@ const LoginPage = () => {
       if (userRole === "faculty") {
         navigate("/faculty");
       } else if (userRole === "admin") {
-        navigate("/admin-dashboard");
+        navigate("/admin");
       } else {
         toast.error("Unauthorized role.");
         await signOut(auth); // Sign out unauthorized users

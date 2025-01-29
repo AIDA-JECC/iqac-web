@@ -9,6 +9,7 @@ import {
   getDoc 
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
+import { Navigate } from "react-router-dom";
 
 const submissions = [];
 
@@ -223,6 +224,33 @@ export const getBySubmissionId = async (id) => {
 //   }
 // };
 
+export const getUserDepartment = async (email) => { // Get the current logged-in user
+
+  if (email) {
+    try {
+      // Get reference to the user's document in Firestore
+      const userDocRef = doc(db, "users", email); // Assuming the users are stored in the "users" collection
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const department = userDocSnap.data().department; // Get the department field
+        console.log('User department:', department);
+        return department; // Return the department value
+      } else {
+        console.log("No such user document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user department:", error);
+      return null;
+    }
+  } else {
+    console.log("No user is currently logged in.");
+    return null;
+  }
+};
+
+
 export const getSubmissionsByTeacher = async (email) => {
   try {
     const collectionRef = collection(db, "uploads");
@@ -258,19 +286,68 @@ export const getSubmissionsByTeacher = async (email) => {
     throw error;
   }
 };
+export const getSubmissionsByDepartment = async (department) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("dept", "==", department));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching filtered submissions:", error);
+    throw error;
+  }
+};
 
 export const provideFeedback = async (id, feedback) => {
   try {
     const docRef = doc(db, "uploads", id);
-    await updateDoc(docRef, { feedback });
-    await updateDoc(docRef, { status: "Rejected" });
+    
+    // Fetch the current document data
+    const docSnapshot = await getDoc(docRef);
+    if (docSnapshot.exists()) {
+      const existingFeedback = docSnapshot.data().feedback || []; // Get the current feedback or an empty array if none exists
 
-    console.log(`Feedback added to submission with ID: ${id}`);
+      // Append the new feedback to the existing feedback array
+      const updatedFeedback = [...existingFeedback, ...feedback];
+      
+      // Update the feedback and status fields
+      await updateDoc(docRef, { feedback: updatedFeedback });
+      await updateDoc(docRef, { status: "Rejected" });
+
+      console.log(`Feedback added to submission with ID: ${id}`);
+    } else {
+      console.error("Document not found");
+    }
   } catch (error) {
     console.error("Error providing feedback:", error);
-    throw error;
+    //throw error;
   }
 };
+
 
 export const approveSubmission = async (id) => {
   try {

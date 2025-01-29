@@ -12,6 +12,9 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase"; // Your Firebase config
 import UnAuthorized from "./pages/UnAuthorized";
 import "./App.css"
+import { SelectMembersPage } from "./pages/SelectMembers.jsx";
+import ScrutinyDashboard from "./pages/ScrutinyDashboard.jsx";
+import ScrutinyApproval from "./pages/ScrutinyApproval.jsx";
 
 const App = () => {
 
@@ -56,10 +59,18 @@ const App = () => {
           }
         />
         <Route
-          path="/admin-dashboard"
+          path="/scrutiny"
+          element={
+            <ProtectedRoute requiredRole="faculty">
+              <ScrutinyDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
           element={
             <ProtectedRoute requiredRole="admin">
-              <AdminDashboard />
+              <SelectMembersPage />
             </ProtectedRoute>
           }
         />
@@ -75,6 +86,12 @@ const App = () => {
           path="/view/:id"
           element={
               <TeacherFeedback />
+          }
+        />
+        <Route
+          path="/scrutiny/view/:id"
+          element={
+              <ScrutinyApproval />
           }
         />
         <Route
