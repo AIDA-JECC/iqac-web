@@ -5,7 +5,7 @@ import { StatusItem } from "./StatusItem";
 import { auth, db } from "../firebase"; // Assuming you have firestore set up
 import { STATUS_COLORS, BUTTON_COLORS } from "../pages/types";
 import { signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation  } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore"; // Firestore imports
 
 const extractName = (email) => {
@@ -96,7 +96,9 @@ export const Sidebar = ({ submissions }) => {
           {/* Conditionally render the Scrutiny Dashboard button */}
           {isScrutiny && (
             <button
-              className={styles.navItem}
+              className={`${styles.navItem} ${
+                location.pathname === "/scrutiny" ? styles.navItemActive : ""
+              }`}
               onClick={() => navigate("/scrutiny")}
             >
               <img
@@ -108,7 +110,9 @@ export const Sidebar = ({ submissions }) => {
             </button>
           )}
           <button
-            className={styles.navItemActive}
+             className={`${styles.navItem} ${
+                location.pathname === "/faculty" ? styles.navItemActive : ""
+              }`}
             onClick={() => navigate("/faculty")}
           >
             <img
