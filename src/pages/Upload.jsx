@@ -1,7 +1,8 @@
 import { useState, useRef } from "react";
 import styles from "./Upload.module.css";
-import { db, auth } from "../firebase"; // Firebase configuration
+import { db, auth,storage } from "../firebase"; // Firebase configuration
 import { addDoc, collection } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import ref, uploadBytes, and getDownloadURL
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
@@ -60,6 +61,12 @@ export const NoteEditor = () => {
     }
 
     try {
+
+      // Upload file to Firebase Storage
+      const storageRef = ref(storage, `uploads/${file.name}`);
+      await uploadBytes(storageRef, file);
+      const fileURL = await getDownloadURL(storageRef);
+
       const docRef = await addDoc(collection(db, "uploads"), {
         subjectCode,
         courseName: subjectName,
