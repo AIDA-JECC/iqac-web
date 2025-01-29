@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./Upload.module.css";
 import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection,doc,updateDoc } from "firebase/firestore";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
@@ -100,6 +100,7 @@ export const TeacherFeedback = () => {
           Year: result?.year || "2",
           Semester: result?.semester || "4",
         });
+        setFeedbackMessages(result?.feedback)
       } catch (error) {
         console.error("Error fetching submission data:", error);
       }
@@ -147,7 +148,7 @@ export const TeacherFeedback = () => {
         subjectCode,
         courseName: subjectName,
         description,
-       // teacherName: extractName(auth.currentUser.email),
+        // teacherName: extractName(auth.currentUser.email),
         fileName: file.name,
         uploadedBy: auth.currentUser.email,
         status: "Pending",

@@ -161,8 +161,6 @@ export const TeacherDashboard = () => {
   };
 
   const handleViewClick = (id) => {
-
-
     // Navigate to the desired page with the ID
     navigate(`/view/${id}`);
   };
