@@ -5,6 +5,9 @@ import { SubjectRow } from "../components/SubjectRow";
 import { UserProfile } from "./UserProfile";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
 
+// for signout function
+import { signOut } from "firebase/auth";
+
 import { db, auth } from "../firebase"; // Firebase configuration
 import { addDoc, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -145,9 +148,17 @@ export const TeacherDashboard = () => {
     },
   ];
 
-  // const handleSearch = (e) => {
-  //   setSearchTerm(e.target.value);
-  // };
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth); // Sign out the user
+      navigate("/", { replace: true });
+      window.location.reload(); // Redirect to login page
+      toast.success("You have been signed out!");
+    } catch (error) {
+      console.error("Error during sign out:", error);
+      toast.error("Sign out failed. Please try again.");
+    }
+  };
 
   const handleViewClick = (subject) => {
     console.log(`Viewing details for ${subject}`);
@@ -206,6 +217,11 @@ export const TeacherDashboard = () => {
 
         <main className={styles.mainContent}>
           <h1 className={styles.welcomeTitle}>Welcome</h1>
+          <div className={styles.signoutContainer}>
+            <button className={styles.signout} onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>
 
           <div className={styles.searchBar}>
             <img
@@ -282,7 +298,7 @@ export const TeacherDashboard = () => {
                 key={index}
                 {...row}
                 onViewClick={() => handleViewClick(row.courseName)}
-                statusColor = {
+                statusColor={
                   row.status === "Approved"
                     ? STATUS_COLORS.APPROVED
                     : row.status === "Rejected"
