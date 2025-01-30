@@ -22,9 +22,10 @@ const extractName = (email) => {
 
 export const ScrutinyApproval = () => {
   const { id } = useParams();
-  const [feedbackMessages, setFeedbackMessages] = useState([""]);
+  const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [status, setStatus] = useState("");
   const [facultyEmail, setFacultyEmail] = useState("");
+  const [newFeedback, setNewFeedback] = useState(""); // Store single input feedback
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [department, setDepartment] = useState("");
@@ -69,7 +70,14 @@ export const ScrutinyApproval = () => {
 
   const handleReject = async () => {
     try {
-      await provideFeedback(id, feedbackMessages);
+      if (newFeedback.trim() !== "") {
+        const updatedFeedback = [...feedbackMessages, newFeedback];
+        setFeedbackMessages(updatedFeedback); // Update state locally
+        await provideFeedback(id, updatedFeedback);
+      } else {
+        toast.error("Please enter feedback before rejecting.");
+        return;
+      }
       navigate("/scrutiny");
     } catch (error) {
       console.error(error);
@@ -180,11 +188,11 @@ export const ScrutinyApproval = () => {
                 </div>
                 {/* Feedback input button */}
                 <div className={styles.subjectContainer}>
-                  <label className={styles.subjectTitle}>Subject Title:</label>
+                  <label className={styles.subjectTitle}>New Feedback:</label>
                   <input
                     type="text"
-                    value={""}
-                    onChange={(e) => setFeedbackMessages(e.target.value)}
+                    value={newFeedback}
+                    onChange={(e) => setNewFeedback(e.target.value)}
                     placeholder="provide feedback"
                     className={styles.subjectInput}
                   />

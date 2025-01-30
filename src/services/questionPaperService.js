@@ -324,19 +324,22 @@ export const getSubmissionsByDepartment = async (department) => {
 
 export const provideFeedback = async (id, feedback) => {
   try {
+    if (!Array.isArray(feedback)) {
+      throw new TypeError("Feedback must be an array.");
+    }
+
     const docRef = doc(db, "uploads", id);
     
     // Fetch the current document data
     const docSnapshot = await getDoc(docRef);
     if (docSnapshot.exists()) {
-      const existingFeedback = docSnapshot.data().feedback || []; // Get the current feedback or an empty array if none exists
+      const existingFeedback = docSnapshot.data().feedback || []; // Ensure it's an array
 
-      // Append the new feedback to the existing feedback array
+      // Append the new feedback
       const updatedFeedback = [...existingFeedback, ...feedback];
-      
+
       // Update the feedback and status fields
-      await updateDoc(docRef, { feedback: updatedFeedback });
-      await updateDoc(docRef, { status: "Rejected" });
+      await updateDoc(docRef, { feedback: updatedFeedback, status: "Rejected" });
 
       console.log(`Feedback added to submission with ID: ${id}`);
     } else {
@@ -344,9 +347,9 @@ export const provideFeedback = async (id, feedback) => {
     }
   } catch (error) {
     console.error("Error providing feedback:", error);
-    //throw error;
   }
 };
+
 
 
 export const approveSubmission = async (id) => {

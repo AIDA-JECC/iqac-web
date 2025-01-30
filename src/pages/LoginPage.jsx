@@ -89,6 +89,7 @@ const LoginPage = () => {
       if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(email);
+      console.log("roleee:",userRole)
       if (userRole === "faculty") {
         navigate("/faculty");
       } else if (userRole === "admin") {
