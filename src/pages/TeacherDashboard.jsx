@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import styles from "./TeacherDashboard.module.css";
+import { StatusItem } from "../components/StatusItem";
 import { SubjectRow } from "../components/SubjectRow";
+import { UserProfile } from "./UserProfile";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
 
 // for signout function
@@ -11,9 +13,9 @@ import { addDoc, collection } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
-  getSubmissionsByTeacher
+  getSubmissionsByTeacher,
+  getSubmissionsByStausAndEmail,
 } from "../services/questionPaperService";
-import { Sidebar } from "../components/Sidebar";
 
 const extractName = (email) => {
   if (!email || typeof email !== "string") {
@@ -82,6 +84,41 @@ export const TeacherDashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      if (!file) {
+        toast.error("Please upload a file!");
+        return;
+      }
+
+      // Add metadata to Firestore
+      const docRef = await addDoc(collection(db, "uploads"), {
+        subjectCode,
+        courseName,
+        teacherName,
+        fileName: file.name,
+        uploadedBy: auth.currentUser.email,
+        status: "Pending",
+        dept: department,
+        uploadedAt: new Date(),
+      });
+
+      toast.success("File uploaded successfully!");
+      console.log("Document written with ID: ", docRef.id);
+
+      // Reset form
+      setSubjectCode("");
+      setCourseName("");
+      setTeacherName("");
+      setDepartment("");
+      setFile(null);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Upload failed. Please check your permissions.");
+    }
+  };
 
   const getStatus = (status) => {
     if (status === "Pending") {
@@ -123,14 +160,60 @@ export const TeacherDashboard = () => {
     }
   };
 
-  const handleViewClick = (id) => {
-    navigate(`/panel /${id}`);
+  const handleViewClick = (subject) => {
+    console.log(`Viewing details for ${subject}`);
   };
+
+  // const filteredSubjects = submissions.filter((row) =>
+  //   row.courseName.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   return (
     <div className={styles.dashboardContainer}>
       <div className={styles.contentWrapper}>
-        <Sidebar submissions={submissions} />
+        <aside className={styles.sidebar}>
+          <div className={styles.sidebarContent}>
+            <div className={styles.username}>
+              {extractName(auth.currentUser.email)}
+            </div>
+            <UserProfile
+              name={extractName(auth.currentUser.email)}
+              email={auth.currentUser.email}
+              avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+            />
+            <nav className={styles.sidebarNav}>
+              <button className={styles.navItem}>
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/985611777b53d928491f2353d15659e64203949de2847ad589ca9ecafbf36834?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+                  alt=""
+                  className={styles.navIcon}
+                />
+                <span>Menu</span>
+              </button>
+              <button className={styles.navItemActive}>
+                <img
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+                  alt=""
+                  className={styles.navIcon}
+                />
+                <span>Status</span>
+              </button>
+            </nav>
+
+            {statusItems.map((item, index) => (
+              <StatusItem key={index} {...item} />
+            ))}
+
+            <div className={styles.sidebarFooter}>
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/fa111f5bad02979d542f0fd932aa82ea41f5bc99818bb5ae9de91fdbbf76fa20?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+                alt=""
+                className={styles.footerIcon}
+              />
+              <span>{auth.currentUser.email}</span>
+            </div>
+          </div>
+        </aside>
 
         <main className={styles.mainContent}>
           <h1 className={styles.welcomeTitle}>Welcome</h1>
@@ -214,7 +297,7 @@ export const TeacherDashboard = () => {
               <SubjectRow
                 key={index}
                 {...row}
-                onViewClick={() => handleViewClick(row.id)}
+                onViewClick={() => handleViewClick(row.courseName)}
                 statusColor={
                   row.status === "Approved"
                     ? STATUS_COLORS.APPROVED

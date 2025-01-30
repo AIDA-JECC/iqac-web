@@ -15,58 +15,8 @@ const extractName = (email) => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 };
 
-const DropdownField = ({ title, options, selectedValue, onChange }) => {
-  return (
-    <div className={styles.dropdownContainer}>
-      <label className={styles.dropdownLabel}>{title}:</label>
-      <select
-        className={styles.dropdown}
-        value={selectedValue}
-        onChange={(e) => onChange(e.target.value)}
-        required
-      >
-        {options.map((option, index) => (
-          <option key={index} value={option.value}>
-            {option.value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
-
-const dropdownData = [
-  {
-    title: "Department",
-    options: [
-      { value: "AD" },
-      { value: "CS" },
-      { value: "ME" },
-      { value: "EC" },
-      { value: "EEE" },
-    ],
-  },
-  {
-    title: "Year",
-    options: [{ value: "1" }, { value: "2" }, { value: "3" }, { value: "4" }],
-  },
-  {
-    title: "Semester",
-    options: [
-      { value: "1" },
-      { value: "2" },
-      { value: "3" },
-      { value: "4" },
-      { value: "5" },
-      { value: "6" },
-      { value: "7" },
-      { value: "8" },
-    ],
-  },
-];
-
 export const NoteEditor = () => {
-  const [subjectName, setSubjectName] = useState("");
+  const [subjectName, setSubjectName] = useState("Subject Name");
   const [subjectCode, setSubjectCode] = useState("");
   const [description, setDescription] = useState("");
   const [dropdownValues, setDropdownValues] = useState({
@@ -232,20 +182,7 @@ export const NoteEditor = () => {
                     />
                   </div>
                   <div className={styles.divider}></div>
-                  <div className={styles.dropdownRow}>
-                    {/* Dropdowns */}
-                    {dropdownData.map((dropdown, index) => (
-                      <DropdownField
-                        key={index}
-                        title={dropdown.title}
-                        options={dropdown.options}
-                        selectedValue={dropdownValues[dropdown.title]}
-                        onChange={(value) =>
-                          handleDropdownChange(dropdown.title, value)
-                        }
-                      />
-                    ))}
-                  </div>
+                  <div className={styles.dropdownRow}>{/* Dropdowns */}</div>
                   <div>
                     <label htmlFor="description">Description:</label>
                     <textarea
