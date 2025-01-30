@@ -1,13 +1,15 @@
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import styles from "./Upload.module.css";
-import { db, auth,storage } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import ref, uploadBytes, and getDownloadURL
-import { useNavigate } from "react-router-dom";
+import { db, auth } from "../firebase"; // Firebase configuration
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
 import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
 import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
+import { getBySubmissionId } from "../services/questionPaperService.js";
+import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const extractName = (email) => {
   const namePart = email.split("@")[0];
@@ -65,7 +67,10 @@ const dropdownData = [
   },
 ];
 
-export const NoteEditor = () => {
+export const TeacherFeedback = () => {
+  const { id } = useParams();
+  const [feedbackMessages, setFeedbackMessages] = useState([]);
+  const [status, setStatus] = useState("");
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [description, setDescription] = useState("");
@@ -78,6 +83,54 @@ export const NoteEditor = () => {
   const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchSubmissionData = async () => {
+      try {
+        // Fetch submission data from Firestore
+        const result = await getBySubmissionId(id);
+        console.log(result.courseName);
+    
+        // Set basic submission data
+        setSubjectName(result?.courseName || "");
+        setSubjectCode(result?.subjectCode || "");
+        setDescription(result?.description || "");
+        setStatus(result?.status || "");
+    
+        // Set dropdown values (Department, Year, Semester)
+        setDropdownValues({
+          Department: result?.dept || "AD",
+          Year: result?.year || "2",
+          Semester: result?.semester || "4",
+        });
+    
+        // Set feedback messages
+        setFeedbackMessages(Array.isArray(result?.feedback) ? result.feedback : []);
+    
+        // Check if fileURL exists in Firestore and fetch the file URL from Firebase Storage
+        if (result?.fileURL) {
+          setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
+        } else if (result?.filePath) {
+          // If filePath exists (without fileURL), get the file URL from Firebase Storage
+          const storage = getStorage(); // Initialize Firebase Storage
+          const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
+    
+          try {
+            const url = await getDownloadURL(fileRef); // Fetch the file URL
+            setFileURL(url); // Update state with the file URL
+          } catch (error) {
+            console.error("Error fetching file URL from Firebase Storage:", error);
+            setFileURL(null); // Handle error by setting URL to null
+          }
+        } else {
+          setFileURL(null); // If no file exists, set the URL to null
+        }
+      } catch (error) {
+        console.error("Error fetching submission data:", error);
+      }
+    };
+    fetchSubmissionData();
+  }, [id]);
 
   const handleDropdownChange = (title, value) => {
     setDropdownValues((prev) => ({ ...prev, [title]: value }));
@@ -111,17 +164,15 @@ export const NoteEditor = () => {
     }
 
     try {
+      // Reference the document to update using the ID from the URL params
+      const docRef = doc(db, "uploads", id);
 
-      // Upload file to Firebase Storage
-      const storageRef = ref(storage, `uploads/${file.name}`);
-      await uploadBytes(storageRef, file);
-      const fileURL = await getDownloadURL(storageRef);
-
-      const docRef = await addDoc(collection(db, "uploads"), {
+      // Update the document with new data
+      await updateDoc(docRef, {
         subjectCode,
         courseName: subjectName,
         description,
-        teacherName: extractName(auth.currentUser.email),
+        // teacherName: extractName(auth.currentUser.email),
         fileName: file.name,
         uploadedBy: auth.currentUser.email,
         status: "Pending",
@@ -129,12 +180,12 @@ export const NoteEditor = () => {
         year: dropdownValues.Year,
         semester: dropdownValues.Semester,
         uploadedAt: new Date(),
-        fileURL,
       });
 
-      toast.success("File uploaded successfully!");
-      console.log("Document written with ID: ", docRef.id);
+      toast.success("File updated successfully!");
+      console.log("Document updated with ID: ", id);
 
+      // Reset form fields
       setSubjectCode("");
       setSubjectName("");
       setDescription("");
@@ -142,10 +193,11 @@ export const NoteEditor = () => {
       setFile(null);
       setFileURL(null);
 
+      // Navigate back to the faculty page or desired route
       navigate("/faculty");
     } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Upload failed. Please check your permissions.");
+      console.error("Error updating file:", error);
+      toast.error("Update failed. Please check your permissions.");
     }
   };
 
@@ -185,18 +237,26 @@ export const NoteEditor = () => {
                     style={{ display: "none" }}
                     accept="application/pdf"
                   />
-                  <button
-                    type="button"
-                    className={styles.uploadButton}
-                    onClick={handleFileUpload}
-                  >
-                    Upload File
-                  </button>
+                  {status === "Rejected" && (
+                    <button
+                      type="button"
+                      className={styles.uploadButton}
+                      onClick={handleFileUpload}
+                    >
+                      Upload File
+                    </button>
+                  )}
                 </div>
               </div>
-
               {/* Details Section */}
+
               <div className={styles.detailsColumn}>
+                <div className={styles.feedbackSection}>
+                  <h2 className={styles.feedbackTitle}>Feedback</h2>
+                  {(feedbackMessages || []).map((message, index) => (
+                    <FeedbackMessage key={index} message={message} />
+                  ))}
+                </div>
                 <div className={styles.detailsSection}>
                   <h2 className={styles.detailsTitle}>Details</h2>
                   <div className={styles.subjectContainer}>
@@ -247,19 +307,11 @@ export const NoteEditor = () => {
                       />
                     ))}
                   </div>
-                  <div>
-                    <label htmlFor="description">Description:</label>
-                    <textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className={styles.descriptionBox}
-                      rows={4}
-                    />
-                  </div>
-                  <button type="submit" className={styles.sendButton}>
-                    Send
-                  </button>
+                  {status === "Rejected" && (
+                    <button type="submit" className={styles.sendButton}>
+                      Send
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -270,4 +322,13 @@ export const NoteEditor = () => {
   );
 };
 
-export default NoteEditor;
+export default TeacherFeedback;
+
+{
+  /* <div className={styles.feedbackSection}>
+  <h2 className={styles.feedbackTitle}>Feedback</h2>
+  {feedbackMessages.map((message, index) => (
+    <FeedbackMessage key={index} message={message} />
+  ))}
+</div>; */
+}

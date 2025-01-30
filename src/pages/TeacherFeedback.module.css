@@ -1,4 +1,4 @@
-.editorContainer {
+.container {
   background-color: rgb(245, 246, 248);
   display: flex;
   flex-direction: column;
@@ -11,53 +11,42 @@
   object-fit: contain;
   object-position: center;
   width: 24px;
-  align-self: flex-end;
+  align-self: end;
   margin-right: 28px;
 }
 
-.contentWrapper {
+.content {
   display: flex;
   margin-top: 20px;
   width: 100%;
   flex-direction: column;
+  align-items: start;
   padding: 0 56px;
 }
 
-.userName {
+.teacherName {
   color: rgb(107, 107, 107);
   letter-spacing: 0.36px;
-  align-self: flex-start;
   margin-left: 14px;
   font: 600 36px Poppins, sans-serif;
 }
 
-.mainContent {
+.mainSection {
   margin-top: 73px;
-}
-
-.contentGrid {
+  display: flex;
   gap: 20px;
-  display: flex;
-}
-
-.previewColumn {
-  display: flex;
-  flex-direction: column;
-  line-height: normal;
-  width: 24%;
-  margin-left: 0;
 }
 
 .previewSection {
+  width: 25%;
   display: flex;
-  flex-grow: 1;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: start;
   font-family: Poppins, sans-serif;
 }
 
 .previewTitle {
-  color: #000;
+  color: rgb(0, 0, 0);
   font-size: 24px;
   font-weight: 400;
   letter-spacing: 0.24px;
@@ -65,22 +54,21 @@
 }
 
 .previewBox {
-  background-color: #fff;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-  align-self: stretch;
-  display: flex;
-  margin-top: 14px;
+  background-color: rgb(255, 255, 255);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  width: 100%;
   height: 543px;
+  margin-top: 14px;
 }
 
-.uploadButton {
+.uploadButton,
+.sendButton {
   border-radius: 6px;
-  background-color: #8A8A8A;
+  background-color: rgb(138, 138, 138);
   margin-top: 33px;
   width: 213px;
-  max-width: 100%;
   font-size: 18px;
-  color: #fff;
+  color: rgb(255, 255, 255);
   font-weight: 600;
   letter-spacing: 0.18px;
   padding: 12px 70px;
@@ -88,62 +76,62 @@
   cursor: pointer;
 }
 
-.detailsColumn {
-  display: flex;
-  flex-direction: column;
-  line-height: normal;
-  width: 76%;
-  margin-left: 20px;
+.sendButton {
+  background-color: rgb(21, 44, 112);
 }
 
-.detailsSection {
+.feedbackSection {
+  width: 75%;
   display: flex;
-  margin-top: 34px;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: start;
   font-family: Poppins, sans-serif;
 }
 
-.detailsTitle {
+.feedbackTitle {
   color: rgb(21, 44, 112);
   font-size: 30px;
   font-weight: 600;
   letter-spacing: 0.3px;
 }
 
-.subjectContainer {
-  margin-top: 16px;
+.feedbackMessage {
+  border-radius: 10px;
+  background-color: rgb(255, 255, 255);
+  margin-top: 22px;
+  width: 950px;
+  max-width: 100%;
+  font-size: 20px;
+  color: var(--text_help_gray, #818e9b);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  padding: 12px 15px 25px;
 }
 
-.subjectTitle {
+.subjectSection {
+  margin-top: 45px;
+}
+
+.subjectLabel {
   color: var(--text_help_gray, #818e9b);
   font-size: 20px;
   font-weight: 500;
   letter-spacing: 0.2px;
-  margin-top: 26px;
 }
 
-.subjectName {
+.subjectValue {
   color: var(--table_black, #323c47);
   font-size: 16px;
   font-weight: 400;
   letter-spacing: 0.16px;
-  margin-top: 16px;
-}
-
-.subjectInput {
-  font-weight: 600;
-  letter-spacing: 0.7px;
-  background-color: rgb(245, 246, 248);
-  color: #334d6e;
-  border-radius: 0px;
-  border: 0;
+  margin-top: 12px;
 }
 
 .divider {
   background: var(--text_line, #d3d8dd);
   width: 100%;
   height: 1px;
+  margin: 20px 0;
 }
 
 .dropdownSection {
@@ -155,9 +143,9 @@
   align-items: flex-start;
 }
 
-.label{
-    border-radius: 0px;
-    border: 0;
+.label {
+  border-radius: 0px;
+  border: 0;
 }
 
 .dropdownRow {
@@ -191,7 +179,6 @@
   box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
 }
 
-
 .dropdownGrid {
   display: flex;
   min-height: 67px;
@@ -201,38 +188,8 @@
   flex-wrap: wrap;
 }
 
-.descriptionBox {
-  background-color: #fff;
-  /* /box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25); */
-  margin-top: 14px;
-  width: 1068px;
-  max-width: 100%;
-  font-size: 16px;
-  color: #000;
-  font-weight: 500;
-  letter-spacing: 0.16px;
-  padding: 24px 39px 89px;
-  border-radius: 0px;
-  border: 0;
-}
-
-.sendButton {
-  border-radius: 6px;
-  background-color: rgb(21, 44, 112);
-  margin-top: 59px;
-  width: 302px;
-  max-width: 100%;
-  font-size: 18px;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.18px;
-  padding: 12px 70px;
-  border: none;
-  cursor: pointer;
-}
-
 @media (max-width: 991px) {
-  .editorContainer {
+  .container {
     padding-bottom: 100px;
   }
 
@@ -240,62 +197,37 @@
     margin-right: 10px;
   }
 
-  .contentWrapper {
+  .content {
     max-width: 100%;
     padding: 0 20px;
   }
 
-  .userName {
+  .teacherName {
     margin-left: 10px;
   }
 
-  .mainContent {
-    max-width: 100%;
-    margin-top: 40px;
-  }
-
-  .contentGrid {
+  .mainSection {
     flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-  }
-
-  .previewColumn {
-    width: 100%;
-  }
-
-  .previewSection {
-    margin-top: 35px;
-  }
-
-  .previewTitle {
-    margin-left: 10px;
-  }
-
-  .uploadButton {
-    padding: 0 20px;
-  }
-
-  .detailsColumn {
-    width: 100%;
-  }
-
-  .detailsSection {
-    max-width: 100%;
     margin-top: 40px;
+  }
+
+  .previewSection,
+  .feedbackSection {
+    width: 100%;
+    margin-top: 40px;
+  }
+
+  .feedbackMessage {
+    padding-right: 20px;
   }
 
   .dropdownSection {
-    max-width: 100%;
-    margin-top: 40px;
+    flex-direction: column;
+    gap: 20px;
   }
 
-  .descriptionBox {
-    padding: 0 20px 110px;
-  }
-
+  .uploadButton,
   .sendButton {
-    margin-top: 40px;
-    padding: 0 20px;
+    padding: 12px 20px;
   }
 }
