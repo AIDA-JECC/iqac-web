@@ -1,8 +1,8 @@
 .dashboardContainer {
   display: flex;
-  min-height: 100vh;
-  background-color: #f5f6f8;
-  font-family: "Poppins";
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
 }
 
 
@@ -60,8 +60,6 @@
   color: #90a0b7;
   font-size: 11px;
   letter-spacing: 0.11px;
-  word-break: break-word; /* Allows breaking long words */
-  white-space: normal; /* Allows text to wrap */
 }
 
 .sidebarNav {
@@ -144,7 +142,6 @@
 }
 
 .footerIcon {
-  filter: invert(19%) sepia(86%) saturate(7486%) hue-rotate(357deg) brightness(93%) contrast(113%);
   width: 14px;
   height: 14px;
 }
@@ -177,7 +174,6 @@
 }
 
 .searchInput {
-  font-weight: 400;
   flex: 1;
   border: none;
   font-size: 18px;
@@ -189,6 +185,7 @@
 .searchInput::placeholder {
   color: #3a3a3a;
 }
+
 
 .actionButtons {
   display: flex;
@@ -319,7 +316,7 @@
   display: flex;
   max-width: 160px;
   flex-direction: column;
-  color: var(--white, #6b6b6b);
+  color: var(--white, #6B6B6B);
   white-space: nowrap;
   text-align: center;
   letter-spacing: 0.13px;
@@ -402,7 +399,7 @@
   background-color: #ff1f3a;
 }
 
-
+/* 
 @media (max-width: 991px) {
   .contentWrapper {
     flex-direction: column;
@@ -433,5 +430,4 @@
   .actionButtons {
     flex-wrap: wrap;
   }
-}
-
+} */
