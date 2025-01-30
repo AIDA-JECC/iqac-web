@@ -6,8 +6,11 @@ import {
   doc,
   updateDoc,
   Timestamp,
+  getDoc ,
+  arrayUnion
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
+import { Navigate } from "react-router-dom";
 
 const submissions = [];
 
@@ -81,37 +84,57 @@ export const getSubmissionsByStausAndEmail = async (email, status) => {
   }
 };
 
-
 // for teachers to get details by id
-export const getById = async (email) => { 
+export const getById = async (email) => {
   try {
     const collectionRef = collection(db, "uploads");
     const q = query(collectionRef, where("uploadedBy", "==", email));
     const querySnapshot = await getDocs(q);
 
     // Filter the documents to only include the one with the matching id
-      console.log("Documents fetched:", querySnapshot.docs.map((doc) => doc.id));
-      const filteredDocument = querySnapshot.docs.find((doc) => doc.id === "AhQFRyo60ZMRPARE6RRs");
-      if (filteredDocument) {
-        console.log("Filtered Document:", filteredDocument.data());
-        return {
-          id: filteredDocument.id,
-          ...filteredDocument.data(),
-        };
-      } else {
-        console.log("No document found with the given ID.");
-        return null;
-      }
-
+    console.log(
+      "Documents fetched:",
+      querySnapshot.docs.map((doc) => doc.id)
+    );
+    const filteredDocument = querySnapshot.docs.find(
+      (doc) => doc.id === "AhQFRyo60ZMRPARE6RRs"
+    );
+    if (filteredDocument) {
+      console.log("Filtered Document:", filteredDocument.data());
+      return {
+        id: filteredDocument.id,
+        ...filteredDocument.data(),
+      };
+    } else {
+      console.log("No document found with the given ID.");
+      return null;
+    }
   } catch (error) {
     console.error("Error fetching filtered submissions:", error);
     throw error;
   }
 };
+export const getBySubmissionId = async (id) => {
+  try {
+    // Use the `doc()` method to point to the specific document by its ID
+    const docRef = doc(db, "uploads", id);
+    const docSnap = await getDoc(docRef);
 
-
-
-
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      return {
+        id: docSnap.id,
+        ...docSnap.data(),
+      };
+    } else {
+      console.log("No document found with the given ID.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching document by ID:", error);
+    throw error;
+  }
+};
 
 // for teachers to get all the submission submitted by them
 // export const getSubmissionsByTeacher = async (email) => {
@@ -120,7 +143,7 @@ export const getById = async (email) => {
 //     const q = query(collectionRef, where("uploadedBy", "==", email));
 //     const data = doc.data();
 //     const timestamp = data.timestamp ? data.timestamp.toDate() : null;
-//     const formattedDateTime = timestamp.toLocaleString(); 
+//     const formattedDateTime = timestamp.toLocaleString();
 //     const [date, time] = formattedDateTime.split(", ");
 //     const querySnapshot = await getDocs(q);
 //     return querySnapshot.docs.map((doc) => ({
@@ -155,7 +178,6 @@ export const getById = async (email) => {
 //       }
 
 //       console.log(date, time);
-      
 
 //       return {
 //         id: doc.id,
@@ -203,6 +225,33 @@ export const getById = async (email) => {
 //   }
 // };
 
+export const getUserDepartment = async (email) => { // Get the current logged-in user
+
+  if (email) {
+    try {
+      // Get reference to the user's document in Firestore
+      const userDocRef = doc(db, "users", email); // Assuming the users are stored in the "users" collection
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const department = userDocSnap.data().department; // Get the department field
+        console.log('User department:', department);
+        return department; // Return the department value
+      } else {
+        console.log("No such user document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user department:", error);
+      return null;
+    }
+  } else {
+    console.log("No user is currently logged in.");
+    return null;
+  }
+};
+
+
 export const getSubmissionsByTeacher = async (email) => {
   try {
     const collectionRef = collection(db, "uploads");
@@ -238,20 +287,63 @@ export const getSubmissionsByTeacher = async (email) => {
     throw error;
   }
 };
+export const getSubmissionsByDepartment = async (department) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("dept", "==", department));
+    const querySnapshot = await getDocs(q);
 
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching filtered submissions:", error);
+    throw error;
+  }
+};
 
 export const provideFeedback = async (id, feedback) => {
   try {
+    if (typeof feedback !== "string") {
+      throw new TypeError("Feedback must be a string.");
+    }
+
     const docRef = doc(db, "uploads", id);
-    await updateDoc(docRef, { feedback });
-    await updateDoc(docRef, { status: "Rejected" });
+
+    // Use Firestore's arrayUnion to append feedback
+    await updateDoc(docRef, {
+      feedback: arrayUnion(feedback),
+      status: "Rejected",
+    });
 
     console.log(`Feedback added to submission with ID: ${id}`);
   } catch (error) {
     console.error("Error providing feedback:", error);
-    throw error;
   }
 };
+
+
 
 export const approveSubmission = async (id) => {
   try {
@@ -277,12 +369,10 @@ export const approveSubmission = async (id) => {
 //   }
 // };
 
-
 export const getAllSubmissions = async () => {
   try {
     const collectionRef = collection(db, "uploads");
     const querySnapshot = await getDocs(collectionRef);
-
 
     const documents = querySnapshot.docs.map((doc) => {
       const data = doc.data();
@@ -322,8 +412,6 @@ export const getAllSubmissionsByStatus = async (status) => {
     const collectionRef = collection(db, "uploads");
     const q = query(collectionRef, where("status", "==", status));
     const querySnapshot = await getDocs(q);
-
-    
 
     const documents = querySnapshot.docs.map((doc) => {
       const data = doc.data();
