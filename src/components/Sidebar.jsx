@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import styles from "../pages/TeacherDashboard.module.css";
 import { UserProfile } from "../pages/UserProfile";
 import { StatusItem } from "./StatusItem";
-import { auth, db } from "../firebase"; // Assuming you have firestore set up
-import { STATUS_COLORS, BUTTON_COLORS } from "../pages/types";
+import { auth, db } from "../firebase"; // Firestore setup
+import { STATUS_COLORS } from "../pages/types";
 import { signOut } from "firebase/auth";
-import { useNavigate,useLocation  } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore"; // Firestore imports
 
 const extractName = (email) => {
@@ -13,7 +13,6 @@ const extractName = (email) => {
     console.error("Invalid email provided:", email);
     return "Unknown"; // Default value if email is invalid
   }
-
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
@@ -21,25 +20,24 @@ const extractName = (email) => {
 
 export const Sidebar = ({ submissions }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isScrutiny, setIsScrutiny] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  // Check the user's role in Firestore
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
         const user = auth.currentUser.email;
         if (user) {
-          const userDocRef = doc(db, "users", user); // Assuming 'users' is the collection
+          const userDocRef = doc(db, "users", user);
           const userDocSnap = await getDoc(userDocRef);
-          console.log("CHECK:", userDocSnap.data());
 
           if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            if (userData.scrutiny === true) {
+            if (userData.role == "admin") {
+              setIsAdmin(true);
+            } else if (userData.scrutiny)
               setIsScrutiny(true);
-            } else {
-              setIsScrutiny(false);
-            }
           } else {
             console.log("No user data found.");
           }
@@ -54,9 +52,9 @@ export const Sidebar = ({ submissions }) => {
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth); // Sign out the user
+      await signOut(auth);
       navigate("/", { replace: true });
-      window.location.reload(); // Redirect to login page
+      window.location.reload();
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -93,7 +91,6 @@ export const Sidebar = ({ submissions }) => {
           avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
         />
         <nav className={styles.sidebarNav}>
-          {/* Conditionally render the Scrutiny Dashboard button */}
           {isScrutiny && (
             <button
               className={`${styles.navItem} ${
@@ -109,19 +106,70 @@ export const Sidebar = ({ submissions }) => {
               <span>Scrutiny Dashboard</span>
             </button>
           )}
-          <button
-             className={`${styles.navItem} ${
+
+          {isAdmin ? (
+            <>
+              <button
+                className={`${styles.navItem} ${
+                  location.pathname === "/scrutiny"
+                    ? styles.navItemActive
+                    : ""
+                }`}
+                onClick={() => navigate("/scrutiny")}
+              >
+                {/* <img
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
+                  alt=""
+                  className={styles.navIcon}
+                /> */}
+                <span>Select Scrutiny Members</span>
+              </button>
+
+              <button
+                className={`${styles.navItem} ${
+                  location.pathname === "/approved-papers"
+                    ? styles.navItemActive
+                    : ""
+                }`}
+                onClick={() => navigate("/approved-papers")}
+              >
+                {/* <img
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
+                  alt=""
+                  className={styles.navIcon}
+                /> */}
+                <span>View Approved Papers</span>
+              </button>
+
+              <button
+                className={`${styles.navItem} ${
+                  location.pathname === "/add-user" ? styles.navItemActive : ""
+                }`}
+                onClick={() => navigate("/add-user")}
+              >
+                {/* <img
+                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
+                  alt=""
+                  className={styles.navIcon}
+                /> */}
+                <span>Add User</span>
+              </button>
+            </>
+          ) : (
+            <button
+              className={`${styles.navItem} ${
                 location.pathname === "/faculty" ? styles.navItemActive : ""
               }`}
-            onClick={() => navigate("/faculty")}
-          >
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
-              alt=""
-              className={styles.navIcon}
-            />
-            <span>View Submissions</span>
-          </button>
+              onClick={() => navigate("/faculty")}
+            >
+              <img
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+                alt=""
+                className={styles.navIcon}
+              />
+              <span>View Submissions</span>
+            </button>
+          )}
         </nav>
 
         {statusItems.map((item, index) => (

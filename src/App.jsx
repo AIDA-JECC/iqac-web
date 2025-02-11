@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import TeacherDashboard from "./pages/TeacherDashboard.jsx";
 import TeacherFeedback from "./pages/TeacherFeedback.jsx";
-import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard page
+// import AdminDashboard from "./pages/AdminDashboard"; // Admin dashboard page
 import Dashboard from "./pages/Dashboard";
 import NoteEditor from "./pages/Upload.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -13,6 +13,7 @@ import { auth } from "./firebase"; // Your Firebase config
 import UnAuthorized from "./pages/UnAuthorized";
 import "./App.css"
 import { SelectMembersPage } from "./pages/SelectMembers.jsx";
+import { ApprovedPapers } from "./pages/ApprovedPapers.jsx";
 import ScrutinyDashboard from "./pages/ScrutinyDashboard.jsx";
 import ScrutinyApproval from "./pages/ScrutinyApproval.jsx";
 
@@ -55,6 +56,14 @@ const App = () => {
           element={
             <ProtectedRoute requiredRole="faculty">
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/approved-papers"
+          element={
+            <ProtectedRoute requiredRole="faculty">
+              <ApprovedPapers />
             </ProtectedRoute>
           }
         />
