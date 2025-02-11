@@ -129,6 +129,7 @@ export const NoteEditor = () => {
         year: dropdownValues.Year,
         semester: dropdownValues.Semester,
         uploadedAt: new Date(),
+        fileURL,
       });
 
       toast.success("File uploaded successfully!");

@@ -6,7 +6,8 @@ import {
   doc,
   updateDoc,
   Timestamp,
-  getDoc 
+  getDoc ,
+  arrayUnion
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 import { Navigate } from "react-router-dom";
@@ -324,27 +325,19 @@ export const getSubmissionsByDepartment = async (department) => {
 
 export const provideFeedback = async (id, feedback) => {
   try {
-    if (!Array.isArray(feedback)) {
-      throw new TypeError("Feedback must be an array.");
+    if (typeof feedback !== "string") {
+      throw new TypeError("Feedback must be a string.");
     }
 
     const docRef = doc(db, "uploads", id);
-    
-    // Fetch the current document data
-    const docSnapshot = await getDoc(docRef);
-    if (docSnapshot.exists()) {
-      const existingFeedback = docSnapshot.data().feedback || []; // Ensure it's an array
 
-      // Append the new feedback
-      const updatedFeedback = [...existingFeedback, ...feedback];
+    // Use Firestore's arrayUnion to append feedback
+    await updateDoc(docRef, {
+      feedback: arrayUnion(feedback),
+      status: "Rejected",
+    });
 
-      // Update the feedback and status fields
-      await updateDoc(docRef, { feedback: updatedFeedback, status: "Rejected" });
-
-      console.log(`Feedback added to submission with ID: ${id}`);
-    } else {
-      console.error("Document not found");
-    }
+    console.log(`Feedback added to submission with ID: ${id}`);
   } catch (error) {
     console.error("Error providing feedback:", error);
   }

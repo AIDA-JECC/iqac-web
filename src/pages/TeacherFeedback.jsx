@@ -9,6 +9,7 @@ import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
 import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
 import { getBySubmissionId } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
+import { getStorage, ref, getDownloadURL } from "firebase/storage";
 
 const extractName = (email) => {
   const namePart = email.split("@")[0];
@@ -86,21 +87,44 @@ export const TeacherFeedback = () => {
   useEffect(() => {
     const fetchSubmissionData = async () => {
       try {
+        // Fetch submission data from Firestore
         const result = await getBySubmissionId(id);
         console.log(result.courseName);
-
+    
+        // Set basic submission data
         setSubjectName(result?.courseName || "");
         setSubjectCode(result?.subjectCode || "");
         setDescription(result?.description || "");
         setStatus(result?.status || "");
-
-        // Ensure dropdownValues are set correctly
+    
+        // Set dropdown values (Department, Year, Semester)
         setDropdownValues({
           Department: result?.dept || "AD",
           Year: result?.year || "2",
           Semester: result?.semester || "4",
         });
-        setFeedbackMessages(result?.feedback)
+    
+        // Set feedback messages
+        setFeedbackMessages(Array.isArray(result?.feedback) ? result.feedback : []);
+    
+        // Check if fileURL exists in Firestore and fetch the file URL from Firebase Storage
+        if (result?.fileURL) {
+          setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
+        } else if (result?.filePath) {
+          // If filePath exists (without fileURL), get the file URL from Firebase Storage
+          const storage = getStorage(); // Initialize Firebase Storage
+          const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
+    
+          try {
+            const url = await getDownloadURL(fileRef); // Fetch the file URL
+            setFileURL(url); // Update state with the file URL
+          } catch (error) {
+            console.error("Error fetching file URL from Firebase Storage:", error);
+            setFileURL(null); // Handle error by setting URL to null
+          }
+        } else {
+          setFileURL(null); // If no file exists, set the URL to null
+        }
       } catch (error) {
         console.error("Error fetching submission data:", error);
       }
@@ -229,7 +253,7 @@ export const TeacherFeedback = () => {
               <div className={styles.detailsColumn}>
                 <div className={styles.feedbackSection}>
                   <h2 className={styles.feedbackTitle}>Feedback</h2>
-                  {feedbackMessages.map((message, index) => (
+                  {(feedbackMessages || []).map((message, index) => (
                     <FeedbackMessage key={index} message={message} />
                   ))}
                 </div>

@@ -22,7 +22,7 @@ const extractName = (email) => {
 
 export const ScrutinyApproval = () => {
   const { id } = useParams();
-  const [feedbackMessages, setFeedbackMessages] = useState([]);
+  const [feedbackMessages, setFeedbackMessages] = useState([""]);
   const [status, setStatus] = useState("");
   const [facultyEmail, setFacultyEmail] = useState("");
   const [newFeedback, setNewFeedback] = useState(""); // Store single input feedback
@@ -41,7 +41,6 @@ export const ScrutinyApproval = () => {
     const fetchSubmissionData = async () => {
       try {
         const result = await getBySubmissionId(id);
-        console.log(result.courseName);
 
         setFacultyEmail(result?.teacherName || "");
         setSubjectName(result?.courseName || "");
@@ -51,7 +50,11 @@ export const ScrutinyApproval = () => {
         setYear(result?.year || "");
         setDescription(result?.description || "");
         setStatus(result?.status || "");
-        setFeedbackMessages(result?.feedback);
+
+        // Ensure feedbackMessages is always an array
+        setFeedbackMessages(
+          Array.isArray(result?.feedback) ? result.feedback : []
+        );
       } catch (error) {
         console.error("Error fetching submission data:", error);
       }
@@ -71,13 +74,19 @@ export const ScrutinyApproval = () => {
   const handleReject = async () => {
     try {
       if (newFeedback.trim() !== "") {
-        const updatedFeedback = [...feedbackMessages, newFeedback];
-        setFeedbackMessages(updatedFeedback); // Update state locally
-        await provideFeedback(id, updatedFeedback);
+        // Append new feedback instead of replacing the array
+        setFeedbackMessages((prevFeedback) => [
+          ...(prevFeedback || []),
+          newFeedback,
+        ]);
+
+        // Update Firestore
+        await provideFeedback(id, newFeedback);
       } else {
         toast.error("Please enter feedback before rejecting.");
         return;
       }
+
       navigate("/scrutiny");
     } catch (error) {
       console.error(error);
@@ -178,7 +187,8 @@ export const ScrutinyApproval = () => {
                 </div>
                 <div className={styles.feedbackSection}>
                   <h2 className={styles.feedbackTitle}>Feedback</h2>
-                  {feedbackMessages && feedbackMessages.length > 0 ? (
+                  {Array.isArray(feedbackMessages) &&
+                  feedbackMessages.length > 0 ? (
                     feedbackMessages.map((message, index) => (
                       <FeedbackMessage key={index} message={message} />
                     ))

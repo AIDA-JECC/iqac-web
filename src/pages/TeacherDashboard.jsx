@@ -124,7 +124,7 @@ export const TeacherDashboard = () => {
   };
 
   const handleViewClick = (id) => {
-    navigate(`/panel /${id}`);
+    navigate(`/view/${id}`);
   };
 
   return (
