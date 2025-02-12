@@ -23,6 +23,7 @@ export const Sidebar = ({ submissions }) => {
   const location = useLocation();
   const [isScrutiny, setIsScrutiny] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -36,8 +37,7 @@ export const Sidebar = ({ submissions }) => {
             const userData = userDocSnap.data();
             if (userData.role == "admin") {
               setIsAdmin(true);
-            } else if (userData.scrutiny)
-              setIsScrutiny(true);
+            } else if (userData.scrutiny) setIsScrutiny(true);
           } else {
             console.log("No user data found.");
           }
@@ -49,6 +49,12 @@ export const Sidebar = ({ submissions }) => {
 
     fetchUserRole();
   }, []);
+
+  useEffect(() => {
+    if (location.pathname === "/faculty") {
+      setShowStatus(true);
+    }
+  }, [location.pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -64,20 +70,17 @@ export const Sidebar = ({ submissions }) => {
     {
       color: STATUS_COLORS.PENDING,
       label: "Pending",
-      count: (submissions || []).filter((item) => item?.status === "Pending")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Pending").length,
     },
     {
       color: STATUS_COLORS.APPROVED,
       label: "Approved",
-      count: (submissions || []).filter((item) => item?.status === "Approved")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Approved").length,
     },
     {
       color: STATUS_COLORS.REJECTED,
       label: "Rejected",
-      count: (submissions || []).filter((item) => item?.status === "Rejected")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Rejected").length,
     },
   ];
 
@@ -93,9 +96,7 @@ export const Sidebar = ({ submissions }) => {
         <nav className={styles.sidebarNav}>
           {isScrutiny && (
             <button
-              className={`${styles.navItem} ${
-                location.pathname === "/scrutiny" ? styles.navItemActive : ""
-              }`}
+              className={`${styles.navItem} ${location.pathname === "/scrutiny" ? styles.navItemActive : ""}`}
               onClick={() => navigate("/scrutiny")}
             >
               <img
@@ -109,59 +110,18 @@ export const Sidebar = ({ submissions }) => {
 
           {isAdmin ? (
             <>
-              <button
-                className={`${styles.navItem} ${
-                  location.pathname === "/scrutiny"
-                    ? styles.navItemActive
-                    : ""
-                }`}
-                onClick={() => navigate("/scrutiny")}
-              >
-                {/* <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
-                  alt=""
-                  className={styles.navIcon}
-                /> */}
+              <button className={`${styles.navItem} ${location.pathname === "/admin" ? styles.navItemActive : ""}`} onClick={() => navigate("/admin")}>
                 <span>Select Scrutiny Members</span>
               </button>
-
-              <button
-                className={`${styles.navItem} ${
-                  location.pathname === "/approved-papers"
-                    ? styles.navItemActive
-                    : ""
-                }`}
-                onClick={() => navigate("/approved-papers")}
-              >
-                {/* <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
-                  alt=""
-                  className={styles.navIcon}
-                /> */}
+              <button className={`${styles.navItem} ${location.pathname === "/approved-papers" ? styles.navItemActive : ""}`} onClick={() => navigate("/approved-papers")}>
                 <span>View Approved Papers</span>
               </button>
-
-              <button
-                className={`${styles.navItem} ${
-                  location.pathname === "/add-user" ? styles.navItemActive : ""
-                }`}
-                onClick={() => navigate("/add-user")}
-              >
-                {/* <img
-                  src="https://cdn.builder.io/api/v1/image/assets/TEMP/icon.png"
-                  alt=""
-                  className={styles.navIcon}
-                /> */}
+              <button className={`${styles.navItem} ${location.pathname === "/add-user" ? styles.navItemActive : ""}`} onClick={() => navigate("/add-user")}>
                 <span>Add User</span>
               </button>
             </>
           ) : (
-            <button
-              className={`${styles.navItem} ${
-                location.pathname === "/faculty" ? styles.navItemActive : ""
-              }`}
-              onClick={() => navigate("/faculty")}
-            >
+            <button className={`${styles.navItem} ${location.pathname === "/faculty" ? styles.navItemActive : ""}`} onClick={() => { navigate("/faculty"); setShowStatus(true); }}>
               <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
                 alt=""
@@ -172,9 +132,7 @@ export const Sidebar = ({ submissions }) => {
           )}
         </nav>
 
-        {statusItems.map((item, index) => (
-          <StatusItem key={index} {...item} />
-        ))}
+        {showStatus && statusItems.map((item, index) => <StatusItem key={index} {...item} />)}
 
         <div className={styles.sidebarFooter}>
           <img

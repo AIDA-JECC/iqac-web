@@ -1,0 +1,503 @@
+.selectionAdmin {
+  background-color: rgba(245, 246, 248, 1);
+  overflow: hidden;
+}
+
+.layout {
+  display: flex;
+  gap: 20px;
+}
+
+@media (max-width: 991px) {
+  .layout {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0px;
+  }
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  line-height: normal;
+  width: 15%;
+  margin-left: 0px;
+}
+
+@media (max-width: 991px) {
+  .sidebar {
+    width: 100%;
+  }
+}
+
+.sidebarContent {
+  display: flex;
+  margin-top: 4px;
+  flex-grow: 1;
+  flex-direction: column;
+  font: 500 13px Poppins, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .sidebarContent {
+    margin-top: 8px;
+  }
+}
+
+.sidebarNav {
+  background: var(--white, #fff);
+  box-shadow: 6px 0px 18px 0px rgba(0, 0, 0, 0.06);
+  background-color: var(--white, #fff);
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  padding: 17px 48px 718px 24px;
+}
+
+@media (max-width: 991px) {
+  .sidebarNav {
+    padding: 0 20px 100px;
+  }
+}
+
+.adminTitle {
+  color: var(--Accent-blue, #109cf1);
+  align-self: start;
+  font: 600 18px Open Sans, sans-serif;
+}
+
+.profileName {
+  color: var(--black, #192a3e);
+  font-size: 14px;
+  align-self: center;
+  margin-top: 46px;
+}
+
+@media (max-width: 991px) {
+  .profileName {
+    margin-top: 40px;
+  }
+}
+
+.profileEmail {
+  color: var(--gray, #90a0b7);
+  font-size: 11px;
+  letter-spacing: 0.11px;
+  align-self: end;
+}
+
+@media (max-width: 991px) {
+  .profileEmail {
+    margin-right: 9px;
+  }
+}
+
+.navItem {
+  align-self: start;
+  display: flex;
+  margin-top: 43px;
+  gap: 11px;
+  color: var(--dark_blue, #334d6e);
+  white-space: nowrap;
+  letter-spacing: 0.13px;
+}
+
+@media (max-width: 991px) {
+  .navItem {
+    margin-top: 40px;
+    white-space: initial;
+  }
+}
+
+.navIcon {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 24px;
+}
+
+.navText {
+  z-index: 10;
+  margin: auto 0;
+  padding: -4px 1px 0;
+}
+
+@media (max-width: 991px) {
+  .navText {
+    white-space: initial;
+  }
+}
+
+.navItemActive {
+  align-self: start;
+  display: flex;
+  margin-top: 16px;
+  gap: 11px;
+  color: var(--Accent-blue, #109cf1);
+  white-space: nowrap;
+  letter-spacing: 0.13px;
+}
+
+@media (max-width: 991px) {
+  .navItemActive {
+    white-space: initial;
+  }
+}
+
+.navTextActive {
+  z-index: 10;
+  margin: auto 0;
+  padding: -5px 1px 0;
+}
+
+@media (max-width: 991px) {
+  .navTextActive {
+    white-space: initial;
+  }
+}
+
+.statusIndicator {
+  align-self: end;
+  display: flex;
+  gap: 8px;
+  color: var(--dark_blue, #334d6e);
+  font-weight: 400;
+  letter-spacing: 0.13px;
+  margin: 12px 0 -144px;
+}
+
+@media (max-width: 991px) {
+  .statusIndicator {
+    margin-bottom: 10px;
+  }
+}
+
+.statusDot {
+  stroke-width: 2px;
+  border-radius: 50%;
+  display: flex;
+  width: 8px;
+  height: 8px;
+  stroke: var(--yellow, #ffb946);
+  margin: auto 0;
+  border: 2px solid rgba(255, 185, 70, 1);
+}
+
+.statusText {
+  z-index: 10;
+  padding-top: -4px;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  line-height: normal;
+  width: 85%;
+  margin-left: 20px;
+}
+
+@media (max-width: 991px) {
+  .mainContent {
+    width: 100%;
+  }
+}
+
+.contentWrapper {
+  display: flex;
+  margin-top: 73px;
+  width: 100%;
+  flex-direction: column;
+  font-family: Poppins, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .contentWrapper {
+    max-width: 100%;
+    margin-top: 40px;
+  }
+}
+
+.contentInner {
+  display: flex;
+  margin-left: 33px;
+  width: 100%;
+  max-width: 1244px;
+  flex-direction: column;
+}
+
+@media (max-width: 991px) {
+  .contentInner {
+    max-width: 100%;
+  }
+}
+
+.pageTitle {
+  color: rgba(107, 107, 107, 1);
+  font-size: 36px;
+  font-weight: 600;
+  letter-spacing: 0.36px;
+  align-self: start;
+}
+
+.actionBar {
+  display: flex;
+  margin-top: 36px;
+  width: 100%;
+  align-items: start;
+  gap: 20px;
+  font-size: 13px;
+  letter-spacing: 0.13px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+@media (max-width: 991px) {
+  .actionBar {
+    max-width: 100%;
+  }
+}
+
+.newFacultyBtn {
+  display: flex;
+  margin-top: 12px;
+  flex-direction: column;
+  color: var(--white, #fff);
+  font-weight: 600;
+  text-align: center;
+}
+
+.btnText {
+  border-radius: 4px;
+  box-shadow: 0px 4px 10px 0px rgba(16, 156, 241, 0.24);
+  background-color: #152c70;
+  padding: 11px 40px;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+}
+
+@media (max-width: 991px) {
+  .btnText {
+    padding: 0 20px;
+  }
+}
+
+.dropdownWrapper {
+  display: flex;
+  align-items: start;
+  gap: 16px;
+  color: var(--table_black, #323c47);
+  font-weight: 400;
+  white-space: nowrap;
+  justify-content: start;
+  margin-right: 100px;
+}
+
+@media (max-width: 991px) {
+  .dropdownWrapper {
+    white-space: initial;
+  }
+}
+
+.dropdown {
+  display: flex;
+  min-width: 240px;
+  width: 336px;
+  flex-direction: column;
+}
+
+@media (max-width: 991px) {
+  .dropdown {
+    white-space: initial;
+  }
+}
+
+.dropdownInner {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  padding: 21px 17px 0;
+}
+
+@media (max-width: 991px) {
+  .dropdownInner {
+    white-space: initial;
+  }
+}
+
+.dropdownContent {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+}
+
+@media (max-width: 991px) {
+  .dropdownContent {
+    margin-right: 5px;
+    white-space: initial;
+  }
+}
+
+.dropdownText {
+  opacity: 0.5;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+  width: 100%;
+}
+
+.dropdownIcon {
+  aspect-ratio: 1.6;
+  object-fit: contain;
+  object-position: center;
+  width: 8px;
+  margin: auto 0;
+}
+.dropdownDivider {
+  background: var(--text_line, #d3d8dd);
+  background-color: var(--text_line, #d3d8dd);
+  display: flex;
+  margin-top: 6px;
+  height: 1px;
+}
+
+.searchBar {
+  background: var(--white, #fff);
+  background-color: var(--white, #fff);
+  display: flex;
+  margin-top: 30px;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--gray, #90a0b7);
+  font-weight: 400;
+  letter-spacing: 0.12px;
+  /* flex-wrap: wrap; */
+  padding: 20px 36px;
+}
+
+@media (max-width: 991px) {
+  .searchBar {
+    padding: 0 20px;
+  }
+}
+
+.searchIcon {
+  aspect-ratio: 1;
+  object-fit: contain;
+  object-position: center;
+  width: 20px;
+}
+
+.searchInput {
+  flex-grow: 1;
+  width: 1296px;
+  flex-basis: auto;
+  border: none;
+  background: transparent;
+  font-size: inherit;
+  font-family: inherit;
+  color: inherit;
+}
+
+@media (max-width: 991px) {
+  .searchInput {
+    max-width: 100%;
+  }
+}
+
+.facultyTable {
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 1);
+  align-self: center;
+  display: flex;
+  margin-top: 32px;
+  margin-bottom: 32px;
+  width: 880px;
+  max-width: 100%;
+  align-items: start;
+  gap: 20px;
+  font-size: 24px;
+  color: rgba(108, 108, 108, 1);
+  font-weight: 500;
+  white-space: nowrap;
+  letter-spacing: 0.24px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: 24px 80px 10px 34px;
+}
+
+@media (max-width: 991px) {
+  .facultyTable {
+    margin-top: 40px;
+    white-space: initial;
+    padding: 0 20px;
+  }
+}
+
+.tableColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+@media (max-width: 991px) {
+  .tableColumn {
+    white-space: initial;
+  }
+}
+
+.tableHeader {
+  align-self: stretch;
+  margin-bottom: 22px;
+}
+
+.tableCell {
+  margin-top: 12px;
+}
+
+.actionColumn {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 1);
+  font-weight: 600;
+  letter-spacing: 0.12px;
+}
+
+@media (max-width: 991px) {
+  .actionColumn {
+    white-space: initial;
+  }
+}
+
+.actionHeader {
+  color: rgba(108, 108, 108, 1);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.24px;
+  align-self: center;
+  margin-bottom: 19px;
+}
+
+.deleteBtn {
+  border-radius: 6px;
+  background-color: rgba(165, 0, 3, 1);
+  padding: 8px 45px;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  margin-top: 15px;
+}
+
+@media (max-width: 991px) {
+  .deleteBtn {
+    white-space: initial;
+    padding: 0 20px;
+  }
+}

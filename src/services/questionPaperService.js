@@ -7,7 +7,8 @@ import {
   updateDoc,
   Timestamp,
   getDoc ,
-  arrayUnion
+  arrayUnion,
+  deleteDoc 
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 import { Navigate } from "react-router-dom";
@@ -368,6 +369,51 @@ export const approveSubmission = async (id) => {
 //     console.error("Error updating user role:", error);
 //   }
 // };
+
+const extractName = (email) => {
+  if (!email || typeof email !== "string") {
+    console.error("Invalid email provided:", email);
+    return "Unknown"; // Default value if email is invalid
+  }
+
+  const namePart = email.split("@")[0];
+  const firstName = namePart.split(".")[0];
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+};
+
+export const getAllUsers = async () => {
+  try {
+    const usersCollectionRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersCollectionRef);
+
+    const users = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        email: data.email || "unknown@example.com", // Ensure email exists
+        name: extractName(data.email), // Extract name from email
+        department: data.department || "Not Assigned", // Provide default department
+      };
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+};
+
+export const deleteUser = async (userId) => {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await deleteDoc(userDocRef);
+    console.log(`User ${userId} deleted successfully`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return false;
+  }
+};
 
 export const getAllSubmissions = async () => {
   try {

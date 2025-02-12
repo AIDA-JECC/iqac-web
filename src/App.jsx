@@ -16,6 +16,7 @@ import { SelectMembersPage } from "./pages/SelectMembers.jsx";
 import { ApprovedPapers } from "./pages/ApprovedPapers.jsx";
 import ScrutinyDashboard from "./pages/ScrutinyDashboard.jsx";
 import ScrutinyApproval from "./pages/ScrutinyApproval.jsx";
+import AddUser from "./pages/AddUser.jsx";
 
 const App = () => {
 
@@ -88,6 +89,14 @@ const App = () => {
           element={
             <ProtectedRoute requiredRole="faculty">
               <NoteEditor />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-user"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AddUser />
             </ProtectedRoute>
           }
         />
