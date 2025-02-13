@@ -3,20 +3,17 @@ import { DropdownField } from "../components/DropdownFiled";
 import { MemberTable } from "../components/MemberTable";
 import styles from "./SelectMembers.module.css";
 import { Sidebar } from "../components/Sidebar";
-import { db, auth } from "../firebase";
-import {
-  collection,
-  getDocs,
-  updateDoc,
-  doc,
-  writeBatch,
-} from "firebase/firestore";
+import { db } from "../firebase";
 import { departmentsList } from "../services/questionPaperService";
+import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
+
+// Create a new array with "All Departments" as the default option
+const departmentOptions = ["All Departments", ...departmentsList];
 
 export const SelectMembersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState(departmentsList[0]); // Default to first department
+  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   // Fetch users from Firestore
@@ -53,11 +50,10 @@ export const SelectMembersPage = () => {
   };
 
   const handleSelectUser = (email) => {
-    setSelectedUsers(
-      (prevSelectedUsers) =>
-        prevSelectedUsers.includes(email)
-          ? prevSelectedUsers.filter((user) => user !== email) // Deselect user
-          : [...prevSelectedUsers, email] // Select user
+    setSelectedUsers((prevSelectedUsers) =>
+      prevSelectedUsers.includes(email)
+        ? prevSelectedUsers.filter((user) => user !== email) // Deselect user
+        : [...prevSelectedUsers, email] // Select user
     );
   };
 
@@ -66,9 +62,7 @@ export const SelectMembersPage = () => {
       const batch = writeBatch(db);
 
       users.forEach((user) => {
-        // Use Firestore document ID instead of email if different
         const userDocRef = doc(db, "users", user.id);
-
         const shouldBeScrutiny = selectedUsers.includes(user.email);
         batch.update(userDocRef, { scrutiny: shouldBeScrutiny });
       });
@@ -80,9 +74,13 @@ export const SelectMembersPage = () => {
     }
   };
 
+  // Filter users based on department and search term.
+  // If "All Departments" is selected, show every user.
   const filteredUsers = users
     .filter((user) =>
-      selectedDepartment ? user.department === selectedDepartment : true
+      selectedDepartment === "All Departments"
+        ? true
+        : user.department === selectedDepartment
     )
     .filter((user) =>
       searchTerm
@@ -115,10 +113,13 @@ export const SelectMembersPage = () => {
               <h1 className={styles.pageTitle}>Select Members</h1>
               <div className={styles.dropdownSection}>
                 <DropdownField
+                  key="Department"
                   title="Department"
-                  options={departmentsList}
+                  options={departmentOptions}
                   selectedValue={selectedDepartment}
-                  onChange={handleDropdownChange}
+                  onChange={(value) =>
+                    handleDropdownChange("Department", value)
+                  }
                 />
               </div>
               <div className={styles.tableSection}>
