@@ -32,10 +32,11 @@
 }
 
 .mainContent {
-  margin-top: 73px;
+  margin-top: 33px;
 }
 
 .contentGrid {
+  margin-left: 20px;
   gap: 20px;
   display: flex;
 }
@@ -220,6 +221,7 @@
   border-radius: 6px;
   background-color: rgb(21, 44, 112);
   margin-top: 59px;
+  margin-left: 50px;
   width: 302px;
   max-width: 100%;
   font-size: 18px;
@@ -229,6 +231,36 @@
   padding: 12px 70px;
   border: none;
   cursor: pointer;
+}
+
+
+.feedbackSection {
+  margin-top: 20px;
+  width: 75%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  font-family: Poppins, sans-serif;
+}
+
+.feedbackTitle {
+  color: rgb(21, 44, 112);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.feedbackMessage {
+  border-radius: 10px;
+  background-color: rgb(255, 255, 255);
+  margin-top: 22px;
+  width: 950px;
+  max-width: 100%;
+  font-size: 20px;
+  color: var(--text_help_gray, #818e9b);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  padding: 12px 15px 25px;
 }
 
 @media (max-width: 991px) {

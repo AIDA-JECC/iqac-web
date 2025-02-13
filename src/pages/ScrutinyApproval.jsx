@@ -244,7 +244,7 @@ export const ScrutinyApproval = () => {
             className={styles.sendButton}
             onClick={handleReject}
           >
-            Rejected
+            Reject
           </button>
         </div>
       </form>
