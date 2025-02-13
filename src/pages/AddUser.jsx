@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect} from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./AddUser.module.css";
 import { Sidebar } from "../components/Sidebar.jsx";
 import { getAllUsers } from "../services/questionPaperService";
@@ -13,6 +14,7 @@ export const AddUser = () => {
     { id: 2, email: "Naiz", department: "CSE" },
     { id: 3, email: "JEE", department: "CY" },
   ]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFaculties = async () => {
@@ -34,13 +36,14 @@ export const AddUser = () => {
   };
 
   const handleNewFaculty = () => {
-    const newId = faculties.length + 1;
-    const newFaculty = {
-      id: newId,
-      name: `New Faculty ${newId}`,
-      department: "TBD",
-    };
-    setFaculties([...faculties, newFaculty]);
+    // const newId = faculties.length + 1;
+    // // const newFaculty = {
+    // //   id: newId,
+    // //   name: `New Faculty ${newId}`,
+    // //   department: "TBD",
+    // // };
+    // setFaculties([...faculties, newFaculty]);
+    navigate("/user/create")
   };
 
   // const handleDeleteFaculty = (id) => {
