@@ -1,8 +1,8 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./AddUser.module.css";
 import { Sidebar } from "../components/Sidebar.jsx";
-import { getAllUsers } from "../services/questionPaperService";
+import { getAllUsers,departmentsList } from "../services/questionPaperService";
 
 import { deleteUser } from "../services/questionPaperService"; // Import the function
 
@@ -19,9 +19,9 @@ export const AddUser = () => {
   useEffect(() => {
     const fetchFaculties = async () => {
       const initialFaculties = await getAllUsers();
-      console.log("users:",initialFaculties)
+      console.log("users:", initialFaculties);
       setFaculties(initialFaculties);
-      console.log(initialFaculties)
+      console.log(initialFaculties);
     };
 
     fetchFaculties();
@@ -43,7 +43,7 @@ export const AddUser = () => {
     // //   department: "TBD",
     // // };
     // setFaculties([...faculties, newFaculty]);
-    navigate("/user/create")
+    navigate("/user/create");
   };
 
   // const handleDeleteFaculty = (id) => {
@@ -65,8 +65,6 @@ export const AddUser = () => {
       faculty.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
       (selectedDepartment === "" || faculty.department === selectedDepartment)
   );
-  
-  
 
   return (
     <div className={styles.selectionAdmin}>
@@ -92,12 +90,11 @@ export const AddUser = () => {
                           onChange={handleDepartmentChange}
                         >
                           <option value="">All Departments</option>
-                          <option value="AD">AD</option>
-                          <option value="CSE">CSE</option>
-                          <option value="CY">CY</option>
-                          <option value="EC">EC</option>
-                          <option value="EEE">EEE</option>
-                          <option value="RA">RA</option>
+                          {departmentsList.map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
                         </select>
                         <img
                           src="https://cdn.builder.io/api/v1/image/assets/TEMP/a05e6c5f5cafbc0a446381bda4b9b2618e68d568e98019acc08bc54516d235ae?placeholderIfAbsent=true&apiKey=5b170d56c390428f8608efe1bd5e79f0"

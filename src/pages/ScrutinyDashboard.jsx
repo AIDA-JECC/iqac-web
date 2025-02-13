@@ -2,12 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from "./TeacherDashboard.module.css";
 import { SubjectRow } from "../components/SubjectRow";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
-
-// for signout function
 import { signOut } from "firebase/auth";
-
-import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
+import {auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {

@@ -12,8 +12,8 @@ export const DropdownField = ({ title, options, selectedValue, onChange }) => {
         required
       >
         {options.map((option, index) => (
-          <option key={index} value={option.value}>
-            {option.value}
+          <option key={index} value={option}>
+            {option}
           </option>
         ))}
       </select>

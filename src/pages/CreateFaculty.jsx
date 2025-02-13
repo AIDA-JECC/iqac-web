@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./CreateFaculty.module.css";
-import { createUser } from "../services/questionPaperService";
+import { createUser,departmentsList } from "../services/questionPaperService";
 
 export const CreateFaculty = () => {
-  const [name, setName] = useState("Bineesh");
-  const [email, setEmail] = useState("Bineesh.ad@jecc.ac.in");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("AD");
   const [role, setRole] = useState("faculty");
 
@@ -15,7 +15,7 @@ export const CreateFaculty = () => {
     e.preventDefault();
     console.log("Submitted:", { name, email, department, role });
 
-   const userId = email
+    const userId = email;
     const success = await createUser(userId, email, name, department, role);
 
     if (success) {
@@ -67,10 +67,11 @@ export const CreateFaculty = () => {
                         value={department}
                         onChange={(e) => setDepartment(e.target.value)}
                       >
-                        <option value="AD">AD</option>
-                        <option value="EC">EC</option>
-                        <option value="EEE">EEE</option>
-                        <option value="MR">MR</option>
+                        {departmentsList.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

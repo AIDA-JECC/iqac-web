@@ -11,22 +11,12 @@ import {
   doc,
   writeBatch,
 } from "firebase/firestore";
-
-const dropdown = {
-  title: "Department",
-  options: [
-    { value: "AD" },
-    { value: "CS" },
-    { value: "ME" },
-    { value: "EC" },
-    { value: "EEE" },
-  ],
-};
+import { departmentsList } from "../services/questionPaperService";
 
 export const SelectMembersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState("AD");
+  const [selectedDepartment, setSelectedDepartment] = useState(departmentsList[0]); // Default to first department
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   // Fetch users from Firestore
@@ -125,13 +115,10 @@ export const SelectMembersPage = () => {
               <h1 className={styles.pageTitle}>Select Members</h1>
               <div className={styles.dropdownSection}>
                 <DropdownField
-                  key={dropdown.title}
-                  title={dropdown.title}
-                  options={dropdown.options}
+                  title="Department"
+                  options={departmentsList}
                   selectedValue={selectedDepartment}
-                  onChange={(value) =>
-                    handleDropdownChange(dropdown.title, value)
-                  }
+                  onChange={handleDropdownChange}
                 />
               </div>
               <div className={styles.tableSection}>

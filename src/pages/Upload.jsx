@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
 import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
 import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
+import { departmentsList } from "../services/questionPaperService";
 
 const extractName = (email) => {
   const namePart = email.split("@")[0];
@@ -38,13 +39,7 @@ const DropdownField = ({ title, options, selectedValue, onChange }) => {
 const dropdownData = [
   {
     title: "Department",
-    options: [
-      { value: "AD" },
-      { value: "CS" },
-      { value: "ME" },
-      { value: "EC" },
-      { value: "EEE" },
-    ],
+    options: departmentsList.map(department => ({ value: department })), 
   },
   {
     title: "Year",
