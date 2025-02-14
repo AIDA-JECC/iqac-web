@@ -11,7 +11,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase"; // Your Firebase config
 import UnAuthorized from "./pages/UnAuthorized";
-import "./App.css"
+import "./App.css";
 import { SelectMembersPage } from "./pages/SelectMembers.jsx";
 import { ApprovedPapers } from "./pages/ApprovedPapers.jsx";
 import ScrutinyDashboard from "./pages/ScrutinyDashboard.jsx";
@@ -20,7 +20,6 @@ import AddUser from "./pages/AddUser.jsx";
 import CreateFaculty from "./pages/CreateFaculty.jsx";
 
 const App = () => {
-
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,9 +35,12 @@ const App = () => {
   }, []);
 
   if (loading) {
-    return<div className="Loader">
-    <div>Loading...</div><div className="loading-spinner"></div>
-  </div>;
+    return (
+      <div className="Loader">
+        <div>Loading...</div>
+        <div className="loading-spinner"></div>
+      </div>
+    );
   }
 
   return (
@@ -48,23 +50,23 @@ const App = () => {
         <Route
           path="/faculty"
           element={
-            <ProtectedRoute requiredRole="faculty">
+            <ProtectedRoute requiredRoles={["faculty", "admin"]}>
               <TeacherDashboard />
             </ProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/hod"
           element={
             <ProtectedRoute requiredRole="faculty">
               <Dashboard />
             </ProtectedRoute>
           }
-        />
+        /> */}
         <Route
           path="/approved-papers"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredRoles={["admin"]}>
               <ApprovedPapers />
             </ProtectedRoute>
           }
@@ -72,7 +74,7 @@ const App = () => {
         <Route
           path="/scrutiny"
           element={
-            <ProtectedRoute requiredRole="faculty">
+            <ProtectedRoute requiredRoles={["faculty", "admin"]}>
               <ScrutinyDashboard />
             </ProtectedRoute>
           }
@@ -80,7 +82,7 @@ const App = () => {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredRoles={["admin"]}>
               <SelectMembersPage />
             </ProtectedRoute>
           }
@@ -88,7 +90,7 @@ const App = () => {
         <Route
           path="/upload"
           element={
-            <ProtectedRoute requiredRole="faculty">
+            <ProtectedRoute requiredRoles={["faculty", "admin"]}>
               <NoteEditor />
             </ProtectedRoute>
           }
@@ -96,7 +98,7 @@ const App = () => {
         <Route
           path="/add-user"
           element={
-            <ProtectedRoute requiredRole="admin">
+            <ProtectedRoute requiredRoles={["admin"]}>
               <AddUser />
             </ProtectedRoute>
           }
@@ -104,29 +106,28 @@ const App = () => {
         <Route
           path="/user/create"
           element={
-            <ProtectedRoute requiredRole="admin">
-              <CreateFaculty/>
+            <ProtectedRoute requiredRoles={["admin"]}>
+              <CreateFaculty />
             </ProtectedRoute>
           }
         />
         <Route
           path="/view/:id"
           element={
+            <ProtectedRoute requiredRoles={["faculty", "admin"]}>
               <TeacherFeedback />
+            </ProtectedRoute>
           }
         />
         <Route
           path="/scrutiny/view/:id"
           element={
-              <ScrutinyApproval />
+            <ProtectedRoute requiredRoles={["faculty", "admin"]}>
+              <TeacherFeedback />
+            </ProtectedRoute>
           }
         />
-        <Route
-          path="/unauthorized"
-          element={
-              <UnAuthorized />
-          }
-        />
+        <Route path="/unauthorized" element={<UnAuthorized />} />
       </Routes>
     </Router>
   );

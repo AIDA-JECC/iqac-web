@@ -70,7 +70,8 @@ export const NoteEditor = () => {
     Semester: "4",
   });
   const [file, setFile] = useState(null);
-  const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
+  const [fileURL, setFileURL] = useState(null);
+  const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -82,13 +83,10 @@ export const NoteEditor = () => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
-
-      // Generate a URL for the selected file
       if (selectedFile.type === "application/pdf") {
-        const url = URL.createObjectURL(selectedFile);
-        setFileURL(url);
+        setFileURL(URL.createObjectURL(selectedFile));
       } else {
-        setFileURL(null); // Reset the preview if the file is not a PDF
+        setFileURL(null);
       }
     }
   };
@@ -105,9 +103,8 @@ export const NoteEditor = () => {
       return;
     }
 
+    setLoading(true);
     try {
-
-      // Upload file to Firebase Storage
       const storageRef = ref(storage, `uploads/${file.name}`);
       await uploadBytes(storageRef, file);
       const fileURL = await getDownloadURL(storageRef);
@@ -141,6 +138,8 @@ export const NoteEditor = () => {
     } catch (error) {
       console.error("Error uploading file:", error);
       toast.error("Upload failed. Please check your permissions.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -252,8 +251,11 @@ export const NoteEditor = () => {
                       rows={4}
                     />
                   </div>
-                  <button type="submit" className={styles.sendButton}>
+                  {/* <button type="submit" className={styles.sendButton}>
                     Send
+                  </button> */}
+                  <button type="submit" disabled={loading} className={styles.sendButton}>
+                     {loading ? "Uploading..." : "Send"}
                   </button>
                 </div>
               </div>

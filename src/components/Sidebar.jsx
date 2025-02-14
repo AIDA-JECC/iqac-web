@@ -37,7 +37,8 @@ export const Sidebar = ({ submissions }) => {
             const userData = userDocSnap.data();
             if (userData.role == "admin") {
               setIsAdmin(true);
-            } else if (userData.scrutiny) setIsScrutiny(true);
+            }
+            if (userData.scrutiny) setIsScrutiny(true);
           } else {
             console.log("No user data found.");
           }
@@ -94,16 +95,16 @@ export const Sidebar = ({ submissions }) => {
           avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
         />
         <nav className={styles.sidebarNav}>
-          {isScrutiny && (
+          {(isScrutiny) && (
             <button
               className={`${styles.navItem} ${location.pathname === "/scrutiny" ? styles.navItemActive : ""}`}
               onClick={() => navigate("/scrutiny")}
             >
-              <img
+              {/* <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/985611777b53d928491f2353d15659e64203949de2847ad589ca9ecafbf36834?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
                 alt=""
                 className={styles.navIcon}
-              />
+              /> */}
               <span>Scrutiny Dashboard</span>
             </button>
           )}
@@ -118,6 +119,9 @@ export const Sidebar = ({ submissions }) => {
               </button>
               <button className={`${styles.navItem} ${location.pathname === "/add-user" ? styles.navItemActive : ""}`} onClick={() => navigate("/add-user")}>
                 <span>Add User</span>
+              </button>
+              <button className={`${styles.navItem} ${location.pathname === "/faculty" ? styles.navItemActive : ""}`} onClick={() => navigate("/faculty")}>
+                <span>Upload Paper</span>
               </button>
             </>
           ) : (
