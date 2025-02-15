@@ -29,11 +29,11 @@ const extractName = (email) => {
 export const TeacherDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [subjectCode, setSubjectCode] = useState("");
-  const [department, setDepartment] = useState("");
-  const [courseName, setCourseName] = useState("");
-  const [teacherName, setTeacherName] = useState("");
-  const [file, setFile] = useState(null);
+  // const [subjectCode, setSubjectCode] = useState("");
+  // const [department, setDepartment] = useState("");
+  // const [courseName, setCourseName] = useState("");
+  // const [teacherName, setTeacherName] = useState("");
+  // const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");

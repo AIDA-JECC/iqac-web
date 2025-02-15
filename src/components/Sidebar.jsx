@@ -24,6 +24,7 @@ export const Sidebar = ({ submissions }) => {
   const [isScrutiny, setIsScrutiny] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showStatus, setShowStatus] = useState(false);
+  const [dept,setdept] = useState("")
 
   useEffect(() => {
     const fetchUserRole = async () => {
@@ -34,7 +35,9 @@ export const Sidebar = ({ submissions }) => {
           const userDocSnap = await getDoc(userDocRef);
 
           if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
+            const userData = userDocSnap.data(); 
+            console.log(userData.department)
+            setdept(userData.department)
             if (userData.role == "admin") {
               setIsAdmin(true);
             }
@@ -92,6 +95,7 @@ export const Sidebar = ({ submissions }) => {
         <UserProfile
           name={extractName(auth.currentUser.email)}
           email={auth.currentUser.email}
+          department={dept}
           avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
         />
         <nav className={styles.sidebarNav}>
@@ -126,11 +130,11 @@ export const Sidebar = ({ submissions }) => {
             </>
           ) : (
             <button className={`${styles.navItem} ${location.pathname === "/faculty" ? styles.navItemActive : ""}`} onClick={() => { navigate("/faculty"); setShowStatus(true); }}>
-              <img
+              {/* <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
                 alt=""
                 className={styles.navIcon}
-              />
+              /> */}
               <span>View Submissions</span>
             </button>
           )}

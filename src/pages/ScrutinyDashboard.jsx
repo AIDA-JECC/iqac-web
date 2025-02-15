@@ -26,11 +26,11 @@ const extractName = (email) => {
 export const ScrutinyDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [subjectCode, setSubjectCode] = useState("");
-  const [department, setDepartment] = useState("");
-  const [courseName, setCourseName] = useState("");
-  const [teacherName, setTeacherName] = useState("");
-  const [file, setFile] = useState(null);
+  // const [subjectCode, setSubjectCode] = useState("");
+  // const [department, setDepartment] = useState("");
+  // const [courseName, setCourseName] = useState("");
+  // const [teacherName, setTeacherName] = useState("");
+  // const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -153,13 +153,13 @@ export const ScrutinyDashboard = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            <button
+            {/* <button
               className={styles.addButton}
               aria-label="Add new item"
               onClick={() => navigate("/upload")}
             >
               +
-            </button>
+            </button> */}
             <button
               className={styles.filterButton}
               aria-label="Filter items"

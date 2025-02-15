@@ -55,6 +55,13 @@
   font-size: 14px;
   font-weight: 500;
 }
+.profileDepartment {
+  color: #90a0b7;
+  font-size: 11px;
+  letter-spacing: 0.11px;
+  word-break: break-word; /* Allows breaking long words */
+  white-space: normal;
+}
 
 .profileEmail {
   color: #90a0b7;
