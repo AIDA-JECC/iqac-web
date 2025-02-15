@@ -31,7 +31,6 @@ export const ScrutinyApproval = () => {
   const [department, setDepartment] = useState("");
   const [semester, setSemester] = useState("");
   const [year, setYear] = useState("");
-  const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
   const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
   const fileInputRef = useRef(null);
@@ -48,10 +47,30 @@ export const ScrutinyApproval = () => {
         setDepartment(result?.dept || "");
         setSemester(result?.semester || "");
         setYear(result?.year || "");
-        setDescription(result?.description || "");
+        // setDescription(result?.description || "");
         setStatus(result?.status || "");
 
         // Ensure feedbackMessages is always an array
+        if (result?.fileURL) {
+          setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
+        } else if (result?.filePath) {
+          // If filePath exists (without fileURL), get the file URL from Firebase Storage
+          const storage = getStorage(); // Initialize Firebase Storage
+          const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
+
+          try {
+            const url = await getDownloadURL(fileRef); // Fetch the file URL
+            setFileURL(url); // Update state with the file URL
+          } catch (error) {
+            console.error(
+              "Error fetching file URL from Firebase Storage:",
+              error
+            );
+            setFileURL(null); // Handle error by setting URL to null
+          }
+        } else {
+          setFileURL(null); // If no file exists, set the URL to null
+        }
         setFeedbackMessages(
           Array.isArray(result?.feedback) ? result.feedback : []
         );
@@ -225,7 +244,7 @@ export const ScrutinyApproval = () => {
             className={styles.sendButton}
             onClick={handleReject}
           >
-            Rejected
+            Reject
           </button>
         </div>
       </form>

@@ -2,12 +2,8 @@ import React, { useState, useEffect } from "react";
 import styles from "./TeacherDashboard.module.css";
 import { SubjectRow } from "../components/SubjectRow";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
-
-// for signout function
 import { signOut } from "firebase/auth";
-
-import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
+import {auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -30,11 +26,11 @@ const extractName = (email) => {
 export const ScrutinyDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [subjectCode, setSubjectCode] = useState("");
-  const [department, setDepartment] = useState("");
-  const [courseName, setCourseName] = useState("");
-  const [teacherName, setTeacherName] = useState("");
-  const [file, setFile] = useState(null);
+  // const [subjectCode, setSubjectCode] = useState("");
+  // const [department, setDepartment] = useState("");
+  // const [courseName, setCourseName] = useState("");
+  // const [teacherName, setTeacherName] = useState("");
+  // const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -157,13 +153,13 @@ export const ScrutinyDashboard = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            <button
+            {/* <button
               className={styles.addButton}
               aria-label="Add new item"
               onClick={() => navigate("/upload")}
             >
               +
-            </button>
+            </button> */}
             <button
               className={styles.filterButton}
               aria-label="Filter items"

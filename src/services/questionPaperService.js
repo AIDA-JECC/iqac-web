@@ -7,12 +7,15 @@ import {
   updateDoc,
   Timestamp,
   getDoc ,
-  arrayUnion
+  arrayUnion,
+  deleteDoc ,
+  setDoc
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 import { Navigate } from "react-router-dom";
 
 const submissions = [];
+export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY"];
 
 export const uploadQuestionPaper = (data) => {
   submissions.push({ ...data, id: submissions.length + 1, status: "Pending" });
@@ -135,95 +138,6 @@ export const getBySubmissionId = async (id) => {
     throw error;
   }
 };
-
-// for teachers to get all the submission submitted by them
-// export const getSubmissionsByTeacher = async (email) => {
-//   try {
-//     const collectionRef = collection(db, "uploads");
-//     const q = query(collectionRef, where("uploadedBy", "==", email));
-//     const data = doc.data();
-//     const timestamp = data.timestamp ? data.timestamp.toDate() : null;
-//     const formattedDateTime = timestamp.toLocaleString();
-//     const [date, time] = formattedDateTime.split(", ");
-//     const querySnapshot = await getDocs(q);
-//     return querySnapshot.docs.map((doc) => ({
-//       id: doc.id,
-//       ...doc.data(),
-//       date,
-//       time,
-//     }));
-//   } catch (error) {
-//     console.error("Error fetching filtered submissions:", error);
-//     throw error;
-//   }
-// };
-
-// for teachers to get all the submission submitted by them
-// export const getSubmissionsByTeacher = async (email) => {
-//   try {
-//     const collectionRef = collection(db, "uploads");
-//     const q = query(collectionRef, where("uploadedBy", "==", email));
-//     const querySnapshot = await getDocs(q);
-
-//     return querySnapshot.docs.map((doc) => {
-//       const data = doc.data();
-//       const timestamp = data.timestamp ? data.timestamp.toDate() : null;
-
-//       let date = null;
-//       let time = null;
-
-//       if (timestamp) {
-//         const formattedDateTime = timestamp.toLocaleString(); // Example: "1/19/2025, 2:45:30 PM"
-//         [date, time] = formattedDateTime.split(", "); // Split into date and time
-//       }
-
-//       console.log(date, time);
-
-//       return {
-//         id: doc.id,
-//         ...data,
-//         date, // Include date as a separate field
-//         time, // Include time as a separate field
-//       };
-//     });
-//   } catch (error) {
-//     console.error("Error fetching filtered submissions:", error);
-//     throw error;
-//   }
-// };
-
-// export const getSubmissionsByTeacher = async (email) => {
-//   try {
-//     const collectionRef = collection(db, "uploads");
-//     const q = query(collectionRef, where("uploadedBy", "==", email));
-//     const querySnapshot = await getDocs(q);
-
-//     return querySnapshot.docs.map((doc) => {
-//       const data = doc.data();
-//       const timestamp = data._timestamp ? data._timestamp.toDate() : null;
-
-//       let date = null;
-//       let time = null;
-
-//       if (timestamp) {
-//         const formattedDateTime = timestamp.toLocaleString(); // Formats to "MM/DD/YYYY, HH:MM:SS AM/PM"
-//         [date, time] = formattedDateTime.split(", "); // Splits into date and time
-//       } else {
-//         console.warn(`Missing timestamp for document ID: ${doc.id}`);
-//       }
-
-//       return {
-//         id: doc.id,
-//         ...data,
-//         date, // Example: "01/19/2025"
-//         time, // Example: "2:45:30 PM"
-//       };
-//     });
-//   } catch (error) {
-//     console.error("Error fetching filtered submissions:", error);
-//     throw error;
-//   }
-// };
 
 export const getUserDepartment = async (email) => { // Get the current logged-in user
 
@@ -368,6 +282,69 @@ export const approveSubmission = async (id) => {
 //     console.error("Error updating user role:", error);
 //   }
 // };
+
+const extractName = (email) => {
+  if (!email || typeof email !== "string") {
+    console.error("Invalid email provided:", email);
+    return "Unknown"; // Default value if email is invalid
+  }
+
+  const namePart = email.split("@")[0];
+  const firstName = namePart.split(".")[0];
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+};
+
+export const getAllUsers = async () => {
+  try {
+    const usersCollectionRef = collection(db, "users");
+    const querySnapshot = await getDocs(usersCollectionRef);
+
+    const users = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        email: data.email || "unknown@example.com", // Ensure email exists
+        name: extractName(data.email), // Extract name from email
+        department: data.department || "Not Assigned", // Provide default department
+      };
+    });
+
+    return users;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+};
+
+export const createUser = async (userId, email, name, department, role) => {  
+  try {  
+    const userDocRef = doc(db, "users", userId);  
+    await setDoc(userDocRef, {  
+      email,  
+      name,  
+      department,  
+      role  
+    });  
+    console.log(`User ${userId} created successfully`);  
+    return true;  
+  } catch (error) {  
+    console.error("Error creating user:", error);  
+    return false;  
+  }  
+};
+
+
+export const deleteUser = async (userId) => {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await deleteDoc(userDocRef);
+    console.log(`User ${userId} deleted successfully`);
+    return true;
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    return false;
+  }
+};
 
 export const getAllSubmissions = async () => {
   try {

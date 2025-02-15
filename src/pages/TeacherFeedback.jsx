@@ -10,7 +10,7 @@ import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layou
 import { getBySubmissionId } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
-
+import { departmentsList } from "../services/questionPaperService";
 const extractName = (email) => {
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
@@ -40,13 +40,7 @@ const DropdownField = ({ title, options, selectedValue, onChange }) => {
 const dropdownData = [
   {
     title: "Department",
-    options: [
-      { value: "AD" },
-      { value: "CS" },
-      { value: "ME" },
-      { value: "EC" },
-      { value: "EEE" },
-    ],
+    options: departmentsList.map(department => ({ value: department }))
   },
   {
     title: "Year",

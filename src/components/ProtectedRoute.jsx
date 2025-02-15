@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
-import { auth, db } from "../firebase"; // Firebase config
+import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
-import "../App.css"
+import "../App.css";
 
-
-const ProtectedRoute = ({ children, requiredRole }) => {
+const ProtectedRoute = ({ children, requiredRoles = [] }) => {
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -41,15 +40,19 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     </div>;
   }
 
-  // Redirect to login page if user is not authenticated or role does not match
-  if (auth.currentUser.email == "sachin.ad21@jecc.ac.in") {
-    return children;
-  }
-  if (!auth.currentUser || userRole !== requiredRole) {
+  // Ensure requiredRoles is always an array and check if userRole is included
+  if (!auth.currentUser || !Array.isArray(requiredRoles) || !requiredRoles.includes(userRole)) {
     return <Navigate to="/unauthorized" />;
   }
 
-  return children; // Render the protected component if authenticated and role matches
+  return children;
 };
 
 export default ProtectedRoute;
+
+
+
+// Redirect to login page if user is not authenticated or role does not match
+// if (auth.currentUser.email == "sachin.ad21@jecc.ac.in") {
+//   return children;
+// }

@@ -6,12 +6,14 @@ import {
   signOut,
   setPersistence,
   browserLocalPersistence,
+  signInWithRedirect,
 } from "firebase/auth";
+import { getRedirectResult } from "firebase/auth";
 import { auth, db } from "../firebase"; // Firebase configuration
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { doc, getDoc } from "firebase/firestore";
-import styles from"./LoginPage.module.css"
+import styles from "./LoginPage.module.css";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -21,9 +23,7 @@ const LoginPage = () => {
   // Function to fetch user role from Firestore
   const fetchUserRole = async (email) => {
     try {
-      
       const userDoc = await getDoc(doc(db, "users", email));
-      console.log("USER DATA:", userDoc)
       if (userDoc.exists()) {
         return userDoc.data().role; // Return the user's role
       } else {
@@ -38,9 +38,28 @@ const LoginPage = () => {
   };
 
   useEffect(() => {
+    const checkUser = async () => {
+      // Check for the redirect result
+      try {
+        const result = await getRedirectResult(auth);
+        if (result && result.user) {
+          const user = result.user;
+          const userRole = await fetchUserRole(user.email);
 
-    const redirect = async () => {
+          if (userRole === "faculty") {
+            navigate("/faculty");
+          } else if (userRole === "admin") {
+            navigate("/admin");
+          } else {
+            toast.error("Unauthorized role.");
+            await signOut(auth);
+          }
+        }
+      } catch (error) {
+        console.error("Error handling redirect:", error);
+      }
 
+      // Check if user is already logged in
       const user = auth.currentUser;
       if (user) {
         const role = await fetchUserRole(user.email);
@@ -52,8 +71,8 @@ const LoginPage = () => {
       }
     };
 
-    redirect();
-  }, [navigate]); // Dependency on navigate to run once on mount
+    checkUser();
+  }, [navigate]);
 
   // Google Sign-In
   const handleGoogleSignIn = async () => {
@@ -61,10 +80,16 @@ const LoginPage = () => {
     try {
       await setPersistence(auth, browserLocalPersistence); // Ensure persistence
       const result = await signInWithPopup(auth, provider);
+
       const user = result.user;
       if (!user) throw new Error("No user information returned.");
 
+      // Fetch user role from Firestore
       const userRole = await fetchUserRole(user.email);
+
+      console.log("User Email:", user);
+      console.log("User Role:", userRole);
+
       if (userRole === "faculty") {
         navigate("/faculty");
       } else if (userRole === "admin") {
@@ -89,7 +114,7 @@ const LoginPage = () => {
       if (!user) throw new Error("No user information returned.");
 
       const userRole = await fetchUserRole(email);
-      console.log("roleee:",userRole)
+      console.log("roleee:", userRole);
       if (userRole === "faculty") {
         navigate("/faculty");
       } else if (userRole === "admin") {
@@ -112,18 +137,49 @@ const LoginPage = () => {
 
   return (
     <div className={styles.LoginPage}>
-      <img className={styles.LoginLft} src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_grey.jpg?updatedAt=1738127877033" />
+      <img
+        className={styles.LoginLft}
+        src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_grey.jpg?updatedAt=1738127877033"
+      />
       <div className={styles.LoginCard}>
         <h5 className={styles.txt}>IQAC | JYOTHI</h5>
-        <img className={styles.jecLogo} src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_logo.png?updatedAt=1738127876326" />
-  
+        <img
+          className={styles.jecLogo}
+          src="https://ik.imagekit.io/AIDA/IQAC%20Web/jec_logo.png?updatedAt=1738127876326"
+        />
+
         {/* Google Sign-In */}
-  
+
         {/* Email/Password Login */}
         <form onSubmit={handleEmailPasswordLogin}>
           <div>
-          <label> 
-          <svg className={styles.user} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <circle cx="12" cy="6" r="4" fill="#3d5ab8"></circle> <ellipse opacity="0.5" cx="12" cy="17" rx="7" ry="4" fill="#3d5ab8"></ellipse> </g></svg>            </label>
+            <label>
+              <svg
+                className={styles.user}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <circle cx="12" cy="6" r="4" fill="#3d5ab8"></circle>{" "}
+                  <ellipse
+                    opacity="0.5"
+                    cx="12"
+                    cy="17"
+                    rx="7"
+                    ry="4"
+                    fill="#3d5ab8"
+                  ></ellipse>{" "}
+                </g>
+              </svg>{" "}
+            </label>
             <input
               type="email"
               placeholder="Email"
@@ -133,9 +189,30 @@ const LoginPage = () => {
             />
           </div>
           <div>
-          <label>
-              <svg className={styles.pass} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" strokeWidth="0"></g><g id="SVGRepo_tracerCarrier" strokeLinecap="round" strokeLinejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fillRule="evenodd" clipRule="evenodd" d="M5.25 10.0546V8C5.25 4.27208 8.27208 1.25 12 1.25C15.7279 1.25 18.75 4.27208 18.75 8V10.0546C19.8648 10.1379 20.5907 10.348 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.40931 10.348 4.13525 10.1379 5.25 10.0546ZM6.75 8C6.75 5.10051 9.10051 2.75 12 2.75C14.8995 2.75 17.25 5.10051 17.25 8V10.0036C16.867 10 16.4515 10 16 10H8C7.54849 10 7.13301 10 6.75 10.0036V8ZM14 16C14 17.1046 13.1046 18 12 18C10.8954 18 10 17.1046 10 16C10 14.8954 10.8954 14 12 14C13.1046 14 14 14.8954 14 16Z" fill="#3356c7"></path> </g></svg>
-              </label>
+            <label>
+              <svg
+                className={styles.pass}
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  {" "}
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M5.25 10.0546V8C5.25 4.27208 8.27208 1.25 12 1.25C15.7279 1.25 18.75 4.27208 18.75 8V10.0546C19.8648 10.1379 20.5907 10.348 21.1213 10.8787C22 11.7574 22 13.1716 22 16C22 18.8284 22 20.2426 21.1213 21.1213C20.2426 22 18.8284 22 16 22H8C5.17157 22 3.75736 22 2.87868 21.1213C2 20.2426 2 18.8284 2 16C2 13.1716 2 11.7574 2.87868 10.8787C3.40931 10.348 4.13525 10.1379 5.25 10.0546ZM6.75 8C6.75 5.10051 9.10051 2.75 12 2.75C14.8995 2.75 17.25 5.10051 17.25 8V10.0036C16.867 10 16.4515 10 16 10H8C7.54849 10 7.13301 10 6.75 10.0036V8ZM14 16C14 17.1046 13.1046 18 12 18C10.8954 18 10 17.1046 10 16C10 14.8954 10.8954 14 12 14C13.1046 14 14 14.8954 14 16Z"
+                    fill="#3356c7"
+                  ></path>{" "}
+                </g>
+              </svg>
+            </label>
             <input
               type="password"
               placeholder="Password"
@@ -147,9 +224,9 @@ const LoginPage = () => {
           <button className={styles.LoginBtn} type="submit">
             Login
           </button>
-  
+
           <h3>Or</h3>
-  
+
           <div onClick={handleGoogleSignIn} className={styles.googleButton}>
             <div className={styles.googleIcon}></div>
             <span>Sign in with Google</span>
@@ -158,7 +235,5 @@ const LoginPage = () => {
       </div>
     </div>
   );
-  
-}
-  export default LoginPage;
-  
+};
+export default LoginPage;

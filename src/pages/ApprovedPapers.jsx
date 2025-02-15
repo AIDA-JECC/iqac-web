@@ -2,17 +2,12 @@ import React, { useState, useEffect } from "react";
 import styles from "./TeacherDashboard.module.css";
 import { SubjectRow } from "../components/SubjectRow";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
-
-// for signout function
 import { signOut } from "firebase/auth";
 
-import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection } from "firebase/firestore";
+import { auth } from "../firebase"; // Firebase configuration
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import {
-  getSubmissionsByTeacher
-} from "../services/questionPaperService";
+import { getApprovedSubmissions } from "../services/questionPaperService";
 import { Sidebar } from "../components/Sidebar";
 
 const extractName = (email) => {
@@ -26,14 +21,14 @@ const extractName = (email) => {
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 };
 
-export const TeacherDashboard = () => {
+export const ApprovedPapers = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // const [subjectCode, setSubjectCode] = useState("");
-  // const [department, setDepartment] = useState("");
-  // const [courseName, setCourseName] = useState("");
-  // const [teacherName, setTeacherName] = useState("");
-  // const [file, setFile] = useState(null);
+//   const [subjectCode, setSubjectCode] = useState("");
+//   const [department, setDepartment] = useState("");
+//   const [courseName, setCourseName] = useState("");
+//   const [teacherName, setTeacherName] = useState("");
+//   const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -42,9 +37,7 @@ export const TeacherDashboard = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        // await updateUserRole(auth.currentUser.email)
-        const data = await getSubmissionsByTeacher(auth.currentUser.email);
-        //console.log("TEST appproved:",await getSubmissionsByStausAndEmail(auth.currentUser.email,"Approved"))
+        const data = await getApprovedSubmissions("Approved");
         console.log(auth.currentUser);
 
         console.log(extractName(auth.currentUser.email));
@@ -81,7 +74,6 @@ export const TeacherDashboard = () => {
 
     return matchesSearch && matchesFilter;
   });
-
 
   const getStatus = (status) => {
     if (status === "Pending") {
@@ -231,4 +223,4 @@ export const TeacherDashboard = () => {
   );
 };
 
-export default TeacherDashboard;
+export default ApprovedPapers;

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import styles from "../pages/TeacherDashboard.module.css";
 import { UserProfile } from "../pages/UserProfile";
 import { StatusItem } from "./StatusItem";
-import { auth, db } from "../firebase"; // Assuming you have firestore set up
-import { STATUS_COLORS, BUTTON_COLORS } from "../pages/types";
+import { auth, db } from "../firebase"; // Firestore setup
+import { STATUS_COLORS } from "../pages/types";
 import { signOut } from "firebase/auth";
-import { useNavigate,useLocation  } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore"; // Firestore imports
 
 const extractName = (email) => {
@@ -13,7 +13,6 @@ const extractName = (email) => {
     console.error("Invalid email provided:", email);
     return "Unknown"; // Default value if email is invalid
   }
-
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
@@ -21,25 +20,28 @@ const extractName = (email) => {
 
 export const Sidebar = ({ submissions }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isScrutiny, setIsScrutiny] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showStatus, setShowStatus] = useState(false);
+  const [dept,setdept] = useState("")
 
-  // Check the user's role in Firestore
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
         const user = auth.currentUser.email;
         if (user) {
-          const userDocRef = doc(db, "users", user); // Assuming 'users' is the collection
+          const userDocRef = doc(db, "users", user);
           const userDocSnap = await getDoc(userDocRef);
-          console.log("CHECK:", userDocSnap.data());
 
           if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            if (userData.scrutiny === true) {
-              setIsScrutiny(true);
-            } else {
-              setIsScrutiny(false);
+            const userData = userDocSnap.data(); 
+            console.log(userData.department)
+            setdept(userData.department)
+            if (userData.role == "admin") {
+              setIsAdmin(true);
             }
+            if (userData.scrutiny) setIsScrutiny(true);
           } else {
             console.log("No user data found.");
           }
@@ -52,11 +54,17 @@ export const Sidebar = ({ submissions }) => {
     fetchUserRole();
   }, []);
 
+  useEffect(() => {
+    if (location.pathname === "/faculty") {
+      setShowStatus(true);
+    }
+  }, [location.pathname]);
+
   const handleSignOut = async () => {
     try {
-      await signOut(auth); // Sign out the user
+      await signOut(auth);
       navigate("/", { replace: true });
-      window.location.reload(); // Redirect to login page
+      window.location.reload();
     } catch (error) {
       console.error("Error during sign out:", error);
     }
@@ -66,20 +74,17 @@ export const Sidebar = ({ submissions }) => {
     {
       color: STATUS_COLORS.PENDING,
       label: "Pending",
-      count: (submissions || []).filter((item) => item?.status === "Pending")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Pending").length,
     },
     {
       color: STATUS_COLORS.APPROVED,
       label: "Approved",
-      count: (submissions || []).filter((item) => item?.status === "Approved")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Approved").length,
     },
     {
       color: STATUS_COLORS.REJECTED,
       label: "Rejected",
-      count: (submissions || []).filter((item) => item?.status === "Rejected")
-        .length,
+      count: (submissions || []).filter((item) => item?.status === "Rejected").length,
     },
   ];
 
@@ -90,43 +95,52 @@ export const Sidebar = ({ submissions }) => {
         <UserProfile
           name={extractName(auth.currentUser.email)}
           email={auth.currentUser.email}
+          department={dept}
           avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
         />
         <nav className={styles.sidebarNav}>
-          {/* Conditionally render the Scrutiny Dashboard button */}
-          {isScrutiny && (
+          {(isScrutiny) && (
             <button
-              className={`${styles.navItem} ${
-                location.pathname === "/scrutiny" ? styles.navItemActive : ""
-              }`}
+              className={`${styles.navItem} ${location.pathname === "/scrutiny" ? styles.navItemActive : ""}`}
               onClick={() => navigate("/scrutiny")}
             >
-              <img
+              {/* <img
                 src="https://cdn.builder.io/api/v1/image/assets/TEMP/985611777b53d928491f2353d15659e64203949de2847ad589ca9ecafbf36834?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
                 alt=""
                 className={styles.navIcon}
-              />
+              /> */}
               <span>Scrutiny Dashboard</span>
             </button>
           )}
-          <button
-             className={`${styles.navItem} ${
-                location.pathname === "/faculty" ? styles.navItemActive : ""
-              }`}
-            onClick={() => navigate("/faculty")}
-          >
-            <img
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
-              alt=""
-              className={styles.navIcon}
-            />
-            <span>View Submissions</span>
-          </button>
+
+          {isAdmin ? (
+            <>
+              <button className={`${styles.navItem} ${location.pathname === "/admin" ? styles.navItemActive : ""}`} onClick={() => navigate("/admin")}>
+                <span>Select Scrutiny Members</span>
+              </button>
+              <button className={`${styles.navItem} ${location.pathname === "/approved-papers" ? styles.navItemActive : ""}`} onClick={() => navigate("/approved-papers")}>
+                <span>View Approved Papers</span>
+              </button>
+              <button className={`${styles.navItem} ${location.pathname === "/add-user" ? styles.navItemActive : ""}`} onClick={() => navigate("/add-user")}>
+                <span>Add User</span>
+              </button>
+              <button className={`${styles.navItem} ${location.pathname === "/faculty" ? styles.navItemActive : ""}`} onClick={() => navigate("/faculty")}>
+                <span>Upload Paper</span>
+              </button>
+            </>
+          ) : (
+            <button className={`${styles.navItem} ${location.pathname === "/faculty" ? styles.navItemActive : ""}`} onClick={() => { navigate("/faculty"); setShowStatus(true); }}>
+              {/* <img
+                src="https://cdn.builder.io/api/v1/image/assets/TEMP/4afa34f9942cce8f2dfa4f565621da02962b9d655c867c56ed7b771382723c2e?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+                alt=""
+                className={styles.navIcon}
+              /> */}
+              <span>View Submissions</span>
+            </button>
+          )}
         </nav>
 
-        {statusItems.map((item, index) => (
-          <StatusItem key={index} {...item} />
-        ))}
+        {showStatus && statusItems.map((item, index) => <StatusItem key={index} {...item} />)}
 
         <div className={styles.sidebarFooter}>
           <img
