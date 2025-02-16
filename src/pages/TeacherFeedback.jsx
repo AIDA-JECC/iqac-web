@@ -250,6 +250,14 @@ export const TeacherFeedback = () => {
                     style={{ display: "none" }}
                     accept="application/pdf"
                   />
+                  {fileURL && (
+                    <button
+                    className={styles.printButton}
+                    onClick={handlePrint}
+                    >
+                      Print File
+                    </button>
+                  )}
                   {status === "Rejected" && (
                     <button
                       type="button"
@@ -257,14 +265,6 @@ export const TeacherFeedback = () => {
                       onClick={handleFileUpload}
                     >
                       Upload File
-                    </button>
-                  )}
-                  {fileURL && (
-                    <button
-                      className={styles.printButton}
-                      onClick={handlePrint}
-                    >
-                      Print File
                     </button>
                   )}
                 </div>
