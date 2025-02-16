@@ -9,7 +9,7 @@ import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
 import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
 import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
 import { departmentsList } from "../services/questionPaperService";
-
+import { v4 as uuidv4 } from "uuid";
 const extractName = (email) => {
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
@@ -105,16 +105,20 @@ export const NoteEditor = () => {
 
     setLoading(true);
     try {
-      const storageRef = ref(storage, `uploads/${file.name}`);
+      const fileId = uuidv4(); // Generate unique file ID
+      const fileExtension = file.name.split('.').pop(); // Get file extension
+      const fileName = `${fileId}.${fileExtension}`; // Generate new filename
+      
+      const storageRef = ref(storage, `uploads/${fileName}`);
       await uploadBytes(storageRef, file);
       const fileURL = await getDownloadURL(storageRef);
-
+    
       const docRef = await addDoc(collection(db, "uploads"), {
         subjectCode,
         courseName: subjectName,
         description,
         teacherName: extractName(auth.currentUser.email),
-        fileName: file.name,
+        fileName, // Store new file name
         uploadedBy: auth.currentUser.email,
         status: "Pending",
         dept: dropdownValues.Department,
