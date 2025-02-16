@@ -8,12 +8,17 @@ import { departmentsList } from "../services/questionPaperService";
 import { collection, getDocs, writeBatch, doc } from "firebase/firestore";
 
 // Create a new array with "All Departments" as the default option
-const departmentOptions = ["All Departments", ...departmentsList];
+// const departmentOptions = ["All Departments", ...departmentsList];
+const departmentOptions = [
+  "All Departments",
+  ...departmentsList,
+];
 
 export const SelectMembersPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [users, setUsers] = useState([]);
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
+  const [selectedDepartment, setSelectedDepartment] =
+    useState("All Departments");
   const [selectedUsers, setSelectedUsers] = useState([]);
 
   // Fetch users from Firestore
@@ -26,10 +31,15 @@ export const SelectMembersPage = () => {
           ...doc.data(),
         }));
 
-        // Initialize selectedUsers with users having scrutiny: true
-        const initiallySelected = usersList
-          .filter((user) => user.scrutiny === true)
-          .map((user) => user.email);
+        // Check scrutiny_common for common subjects
+        const initiallySelected =
+          selectedDepartment === "Common Subjects"
+            ? usersList
+                .filter((user) => user.scrutiny_common === true)
+                .map((user) => user.email)
+            : usersList
+                .filter((user) => user.scrutiny === true)
+                .map((user) => user.email);
 
         setUsers(usersList);
         setSelectedUsers(initiallySelected);
@@ -39,7 +49,7 @@ export const SelectMembersPage = () => {
     };
 
     fetchUsers();
-  }, []);
+  }, [selectedDepartment]);
 
   const handleDropdownChange = (title, value) => {
     setSelectedDepartment(value);
@@ -50,10 +60,11 @@ export const SelectMembersPage = () => {
   };
 
   const handleSelectUser = (email) => {
-    setSelectedUsers((prevSelectedUsers) =>
-      prevSelectedUsers.includes(email)
-        ? prevSelectedUsers.filter((user) => user !== email) // Deselect user
-        : [...prevSelectedUsers, email] // Select user
+    setSelectedUsers(
+      (prevSelectedUsers) =>
+        prevSelectedUsers.includes(email)
+          ? prevSelectedUsers.filter((user) => user !== email) // Deselect user
+          : [...prevSelectedUsers, email] // Select user
     );
   };
 
@@ -63,8 +74,13 @@ export const SelectMembersPage = () => {
 
       users.forEach((user) => {
         const userDocRef = doc(db, "users", user.id);
-        const shouldBeScrutiny = selectedUsers.includes(user.email);
-        batch.update(userDocRef, { scrutiny: shouldBeScrutiny });
+        const shouldBeSelected = selectedUsers.includes(user.email);
+
+        batch.update(userDocRef, {
+          [selectedDepartment === "Common Subjects"
+            ? "scrutiny_common"
+            : "scrutiny"]: shouldBeSelected,
+        });
       });
 
       await batch.commit();
@@ -80,12 +96,13 @@ export const SelectMembersPage = () => {
     .filter((user) =>
       selectedDepartment === "All Departments"
         ? true
+        : selectedDepartment === "Common Subjects"
+        ? true
         : user.department === selectedDepartment
     )
     .filter((user) =>
       searchTerm
-        ? user.name &&
-          user.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ? user.name?.toLowerCase().includes(searchTerm.toLowerCase())
         : true
     );
 

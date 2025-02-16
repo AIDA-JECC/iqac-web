@@ -84,24 +84,6 @@ export const ScrutinyDashboard = () => {
     }
   };
 
-  const statusItems = [
-    {
-      color: STATUS_COLORS.PENDING,
-      label: "Pending",
-      count: submissions.filter((item) => item.status === "Pending").length,
-    },
-    {
-      color: STATUS_COLORS.APPROVED,
-      label: "Approved",
-      count: submissions.filter((item) => item.status === "Approved").length,
-    },
-    {
-      color: STATUS_COLORS.REJECTED,
-      label: "Rejected",
-      count: submissions.filter((item) => item.status === "Rejected").length,
-    },
-  ];
-
   const handleSignOut = async () => {
     try {
       await signOut(auth); // Sign out the user
@@ -153,13 +135,6 @@ export const ScrutinyDashboard = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            {/* <button
-              className={styles.addButton}
-              aria-label="Add new item"
-              onClick={() => navigate("/upload")}
-            >
-              +
-            </button> */}
             <button
               className={styles.filterButton}
               aria-label="Filter items"

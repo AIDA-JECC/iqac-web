@@ -12,10 +12,10 @@ import {
   setDoc
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
-import { Navigate } from "react-router-dom";
+
 
 const submissions = [];
-export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY"];
+export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY","Common Subjects"];
 
 export const uploadQuestionPaper = (data) => {
   submissions.push({ ...data, id: submissions.length + 1, status: "Pending" });
