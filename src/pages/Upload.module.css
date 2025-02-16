@@ -70,13 +70,40 @@
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
   align-self: stretch;
   display: flex;
-  margin-top: 14px;
-  height: 543px;
+  flex-direction: column;
+  width: 100%;
+  height: 80vh;
+  overflow: auto; /* Ensure scroll works */
 }
+
+.pdfContainer {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.pdfContainer > div {
+  width: 100% !important; /* Force full width */
+  height: 100% !important;
+}
+
+.react-pdf__Document {
+  width: 100% !important;
+}
+
+.react-pdf__Page {
+  display: flex;
+  justify-content: center;
+  width: 100% !important;
+}
+
 
 .uploadButton {
   border-radius: 6px;
-  background-color: #8A8A8A;
+  background-color: #8a8a8a;
   margin-top: 33px;
   width: 213px;
   max-width: 100%;
@@ -138,7 +165,9 @@
   background-color: rgb(245, 246, 248);
   color: #334d6e;
   border-radius: 0px;
-  border: 0;
+  border: 0px;
+  outline: none; /* Removes the default focus outline */
+  border: none; /* Ensures no border appears */
 }
 
 .divider {
@@ -156,9 +185,9 @@
   align-items: flex-start;
 }
 
-.label{
-    border-radius: 0px;
-    border: 0;
+.label {
+  border-radius: 0px;
+  border: 0;
 }
 
 .dropdownRow {
@@ -191,7 +220,6 @@
   border-color: #007bff;
   box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
 }
-
 
 .dropdownGrid {
   display: flex;
@@ -233,6 +261,19 @@
   cursor: pointer;
 }
 
+.printButton {
+  border-radius: 6px;
+  background-color: rgb(21, 44, 112);
+  width: 302px;
+  height: 40px;
+  margin-top: 10px;
+  max-width: 100%;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.18px;
+  border: none;
+  cursor: pointer;
+}
 
 .feedbackSection {
   margin-top: 20px;

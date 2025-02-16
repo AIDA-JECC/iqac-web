@@ -23,12 +23,6 @@ const extractName = (email) => {
 
 export const ApprovedPapers = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
-//   const [subjectCode, setSubjectCode] = useState("");
-//   const [department, setDepartment] = useState("");
-//   const [courseName, setCourseName] = useState("");
-//   const [teacherName, setTeacherName] = useState("");
-//   const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -84,24 +78,6 @@ export const ApprovedPapers = () => {
       return <h3 className={styles.red}>Rejected</h3>;
     }
   };
-
-  const statusItems = [
-    {
-      color: STATUS_COLORS.PENDING,
-      label: "Pending",
-      count: submissions.filter((item) => item.status === "Pending").length,
-    },
-    {
-      color: STATUS_COLORS.APPROVED,
-      label: "Approved",
-      count: submissions.filter((item) => item.status === "Approved").length,
-    },
-    {
-      color: STATUS_COLORS.REJECTED,
-      label: "Rejected",
-      count: submissions.filter((item) => item.status === "Rejected").length,
-    },
-  ];
 
   const handleSignOut = async () => {
     try {

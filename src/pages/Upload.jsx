@@ -166,7 +166,9 @@ export const NoteEditor = () => {
                   <div className={styles.previewBox}>
                     {fileURL ? (
                       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                        {/* <div className={styles.pdfContainer}> */}
                         <Viewer fileUrl={fileURL} />
+                        {/* </div> */}
                       </Worker>
                     ) : (
                       <p>No file selected</p>
@@ -241,7 +243,7 @@ export const NoteEditor = () => {
                       />
                     ))}
                   </div>
-                  <div>
+                  {/* <div>
                     <label htmlFor="description">Description:</label>
                     <textarea
                       id="description"
@@ -250,7 +252,7 @@ export const NoteEditor = () => {
                       className={styles.descriptionBox}
                       rows={4}
                     />
-                  </div>
+                  </div> */}
                   {/* <button type="submit" className={styles.sendButton}>
                     Send
                   </button> */}
