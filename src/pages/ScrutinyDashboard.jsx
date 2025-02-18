@@ -3,12 +3,13 @@ import styles from "./TeacherDashboard.module.css";
 import { SubjectRow } from "../components/SubjectRow";
 import { STATUS_COLORS, BUTTON_COLORS } from "./types";
 import { signOut } from "firebase/auth";
-import {auth } from "../firebase";
+import { auth } from "../firebase";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   getSubmissionsByDepartment,
   getUserDepartment,
+  getUserScrutinyCommon,
 } from "../services/questionPaperService";
 import { Sidebar } from "../components/Sidebar";
 
@@ -25,12 +26,6 @@ const extractName = (email) => {
 
 export const ScrutinyDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // const [subjectCode, setSubjectCode] = useState("");
-  // const [department, setDepartment] = useState("");
-  // const [courseName, setCourseName] = useState("");
-  // const [teacherName, setTeacherName] = useState("");
-  // const [file, setFile] = useState(null);
   const [submissions, setSubmissions] = useState([]);
   const [showFilterOptions, setShowFilterOptions] = useState(false);
   const [filterStatus, setFilterStatus] = useState("");
@@ -39,8 +34,18 @@ export const ScrutinyDashboard = () => {
   useEffect(() => {
     const fetchSubmissions = async () => {
       try {
-        const dept = await getUserDepartment(auth.currentUser.email)
-        const data = await getSubmissionsByDepartment(dept);
+        const email = auth.currentUser.email;
+        const dept = await getUserDepartment(email);
+        let data = await getSubmissionsByDepartment(dept);
+
+        const scrutinyCommon = await getUserScrutinyCommon(email);
+        if (scrutinyCommon) {
+          const commonData = await getSubmissionsByDepartment(
+            "Common Subjects"
+          );
+          data = [...data, ...commonData];
+        }
+
         setSubmissions(data);
       } catch (error) {
         console.error("Error fetching submissions:", error);
@@ -48,7 +53,7 @@ export const ScrutinyDashboard = () => {
     };
 
     fetchSubmissions();
-  }, []);
+  }, [auth.currentUser.email]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -73,7 +78,6 @@ export const ScrutinyDashboard = () => {
     return matchesSearch && matchesFilter;
   });
 
-
   const getStatus = (status) => {
     if (status === "Pending") {
       return <h3 className={styles.orange}>Pending</h3>;
@@ -83,24 +87,6 @@ export const ScrutinyDashboard = () => {
       return <h3 className={styles.red}>Rejected</h3>;
     }
   };
-
-  const statusItems = [
-    {
-      color: STATUS_COLORS.PENDING,
-      label: "Pending",
-      count: submissions.filter((item) => item.status === "Pending").length,
-    },
-    {
-      color: STATUS_COLORS.APPROVED,
-      label: "Approved",
-      count: submissions.filter((item) => item.status === "Approved").length,
-    },
-    {
-      color: STATUS_COLORS.REJECTED,
-      label: "Rejected",
-      count: submissions.filter((item) => item.status === "Rejected").length,
-    },
-  ];
 
   const handleSignOut = async () => {
     try {
@@ -153,13 +139,6 @@ export const ScrutinyDashboard = () => {
           </div>
 
           <div className={styles.actionButtons}>
-            {/* <button
-              className={styles.addButton}
-              aria-label="Add new item"
-              onClick={() => navigate("/upload")}
-            >
-              +
-            </button> */}
             <button
               className={styles.filterButton}
               aria-label="Filter items"

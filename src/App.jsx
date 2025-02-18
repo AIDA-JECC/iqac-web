@@ -123,7 +123,7 @@ const App = () => {
           path="/scrutiny/view/:id"
           element={
             <ProtectedRoute requiredRoles={["faculty", "admin"]}>
-              <TeacherFeedback />
+              <ScrutinyApproval />
             </ProtectedRoute>
           }
         />

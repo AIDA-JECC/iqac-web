@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./Upload.module.css";
 import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
@@ -40,7 +40,7 @@ const DropdownField = ({ title, options, selectedValue, onChange }) => {
 const dropdownData = [
   {
     title: "Department",
-    options: departmentsList.map(department => ({ value: department }))
+    options: departmentsList.map((department) => ({ value: department })),
   },
   {
     title: "Year",
@@ -84,23 +84,25 @@ export const TeacherFeedback = () => {
         // Fetch submission data from Firestore
         const result = await getBySubmissionId(id);
         console.log(result.courseName);
-    
+
         // Set basic submission data
         setSubjectName(result?.courseName || "");
         setSubjectCode(result?.subjectCode || "");
         setDescription(result?.description || "");
         setStatus(result?.status || "");
-    
+
         // Set dropdown values (Department, Year, Semester)
         setDropdownValues({
           Department: result?.dept || "AD",
           Year: result?.year || "2",
           Semester: result?.semester || "4",
         });
-    
+
         // Set feedback messages
-        setFeedbackMessages(Array.isArray(result?.feedback) ? result.feedback : []);
-    
+        setFeedbackMessages(
+          Array.isArray(result?.feedback) ? result.feedback : []
+        );
+
         // Check if fileURL exists in Firestore and fetch the file URL from Firebase Storage
         if (result?.fileURL) {
           setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
@@ -108,12 +110,15 @@ export const TeacherFeedback = () => {
           // If filePath exists (without fileURL), get the file URL from Firebase Storage
           const storage = getStorage(); // Initialize Firebase Storage
           const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
-    
+
           try {
             const url = await getDownloadURL(fileRef); // Fetch the file URL
             setFileURL(url); // Update state with the file URL
           } catch (error) {
-            console.error("Error fetching file URL from Firebase Storage:", error);
+            console.error(
+              "Error fetching file URL from Firebase Storage:",
+              error
+            );
             setFileURL(null); // Handle error by setting URL to null
           }
         } else {
@@ -195,6 +200,17 @@ export const TeacherFeedback = () => {
     }
   };
 
+  const handlePrint = () => {
+    if (fileURL) {
+      const printWindow = window.open(fileURL, "_blank");
+      if (printWindow) {
+        printWindow.onload = () => printWindow.print();
+      }
+    } else {
+      toast.error("No file available to print.");
+    }
+  };
+
   return (
     <div className={styles.editorContainer}>
       <form onSubmit={handleSubmit}>
@@ -218,11 +234,14 @@ export const TeacherFeedback = () => {
                   <div className={styles.previewBox}>
                     {fileURL ? (
                       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                        <Viewer fileUrl={fileURL} />
+                        <div className={styles.pdfContainer}>
+                          <Viewer fileUrl={fileURL} />
+                        </div>
                       </Worker>
                     ) : (
                       <p>No file selected</p>
                     )}
+
                   </div>
                   <input
                     type="file"
@@ -231,6 +250,14 @@ export const TeacherFeedback = () => {
                     style={{ display: "none" }}
                     accept="application/pdf"
                   />
+                  {fileURL && (
+                    <button
+                    className={styles.printButton}
+                    onClick={handlePrint}
+                    >
+                      Print File
+                    </button>
+                  )}
                   {status === "Rejected" && (
                     <button
                       type="button"

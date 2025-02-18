@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import styles from "./Upload.module.css";
-import { db, auth } from "../firebase"; // Firebase configuration
-import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
+import { auth } from "../firebase"; // Firebase configuration
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
@@ -102,13 +101,25 @@ export const ScrutinyApproval = () => {
         // Update Firestore
         await provideFeedback(id, newFeedback);
       } else {
-        toast.error("Please enter feedback before rejecting.");
+        // toast.error("Please enter feedback before rejecting.");
+        alert("Please enter feedback before rejecting.");
         return;
       }
 
       navigate("/scrutiny");
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handlePrint = () => {
+    if (fileURL) {
+      const printWindow = window.open(fileURL, "_blank");
+      if (printWindow) {
+        printWindow.onload = () => printWindow.print();
+      }
+    } else {
+      toast.error("No file available to print.");
     }
   };
 
@@ -142,6 +153,11 @@ export const ScrutinyApproval = () => {
                     )}
                   </div>
                 </div>
+                {fileURL && (
+                  <button className={styles.printButton} onClick={handlePrint}>
+                    Print File
+                  </button>
+                )}
               </div>
               {/* Details Section */}
               <div className={styles.detailsColumn}>
@@ -212,17 +228,17 @@ export const ScrutinyApproval = () => {
                       <FeedbackMessage key={index} message={message} />
                     ))
                   ) : (
-                    <p>No feedback messages available.</p>
+                    <p>No previous feedback messages available.</p>
                   )}
                 </div>
                 {/* Feedback input button */}
                 <div className={styles.subjectContainer}>
-                  <label className={styles.subjectTitle}>New Feedback:</label>
+                  {/* <label className={styles.subjectTitle}>New Feedback:</label> */}
                   <input
                     type="text"
                     value={newFeedback}
                     onChange={(e) => setNewFeedback(e.target.value)}
-                    placeholder="provide feedback"
+                    placeholder=" Provide feedback"
                     className={styles.subjectInput}
                   />
                 </div>

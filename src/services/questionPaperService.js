@@ -12,10 +12,10 @@ import {
   setDoc
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
-import { Navigate } from "react-router-dom";
+
 
 const submissions = [];
-export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY"];
+export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY","Common Subjects"];
 
 export const uploadQuestionPaper = (data) => {
   submissions.push({ ...data, id: submissions.length + 1, status: "Pending" });
@@ -151,6 +151,31 @@ export const getUserDepartment = async (email) => { // Get the current logged-in
         const department = userDocSnap.data().department; // Get the department field
         console.log('User department:', department);
         return department; // Return the department value
+      } else {
+        console.log("No such user document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user department:", error);
+      return null;
+    }
+  } else {
+    console.log("No user is currently logged in.");
+    return null;
+  }
+};
+export const getUserScrutinyCommon = async (email) => { // Get the current logged-in user
+
+  if (email) {
+    try {
+      // Get reference to the user's document in Firestore
+      const userDocRef = doc(db, "users", email); // Assuming the users are stored in the "users" collection
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const scrutiny_common = userDocSnap.data().scrutiny_common; // Get the department field
+        console.log('User scrutiny_common:', scrutiny_common);
+        return scrutiny_common; // Return the department value
       } else {
         console.log("No such user document!");
         return null;
