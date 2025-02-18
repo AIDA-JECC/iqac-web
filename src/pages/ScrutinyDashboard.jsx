@@ -10,6 +10,7 @@ import {
   getSubmissionsByDepartment,
   getUserDepartment,
   getUserScrutinyCommon,
+  getSubmissionsBySharedDepartment
 } from "../services/questionPaperService";
 import { Sidebar } from "../components/Sidebar";
 
@@ -36,8 +37,15 @@ export const ScrutinyDashboard = () => {
       try {
         const email = auth.currentUser.email;
         const dept = await getUserDepartment(email);
+
+        // Fetch submissions where 'dept' matches the user's department
         let data = await getSubmissionsByDepartment(dept);
 
+        // Fetch submissions where 'sharedDepartment' contains the user's department
+        const sharedData = await getSubmissionsBySharedDepartment(dept);
+        data = [...data, ...sharedData];
+
+        // Check if user is part of scrutiny for common subjects
         const scrutinyCommon = await getUserScrutinyCommon(email);
         if (scrutinyCommon) {
           const commonData = await getSubmissionsByDepartment(

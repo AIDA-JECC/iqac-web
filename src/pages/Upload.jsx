@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import styles from "./Upload.module.css";
-import { db, auth,storage } from "../firebase"; // Firebase configuration
+import { db, auth, storage } from "../firebase"; // Firebase configuration
 import { addDoc, collection } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage"; // Import ref, uploadBytes, and getDownloadURL
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,10 @@ import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
 import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
 import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
-import { departmentsList } from "../services/questionPaperService";
+import {
+  departmentsList,
+  getUserDepartment,
+} from "../services/questionPaperService";
 import { v4 as uuidv4 } from "uuid";
 const extractName = (email) => {
   const namePart = email.split("@")[0];
@@ -38,8 +41,8 @@ const DropdownField = ({ title, options, selectedValue, onChange }) => {
 
 const dropdownData = [
   {
-    title: "Department",
-    options: departmentsList.map(department => ({ value: department })), 
+    title: "Share With",
+    options: departmentsList.map((department) => ({ value: department })),
   },
   {
     title: "Year",
@@ -64,6 +67,8 @@ export const NoteEditor = () => {
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [description, setDescription] = useState("");
+  const [department, setDepartment] = useState("");
+  const [sharedDepartment, setSharedDepartment] = useState([]);
   const [dropdownValues, setDropdownValues] = useState({
     Department: "AD",
     Year: "2",
@@ -73,10 +78,30 @@ export const NoteEditor = () => {
   const [fileURL, setFileURL] = useState(null);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null);
+  // const sharedDepartment = useRef(null);
   const navigate = useNavigate();
+  useEffect(() => {
+    const fetchUserDepartment = async () => {
+      try {
+        const userDept = await getUserDepartment(auth.currentUser.email);
+        setDepartment(userDept); // Set the department to state
+      } catch (error) {
+        console.error("Error fetching department:", error);
+        toast.error("Error fetching department.");
+      }
+    };
+
+    fetchUserDepartment();
+  }, []);
 
   const handleDropdownChange = (title, value) => {
     setDropdownValues((prev) => ({ ...prev, [title]: value }));
+
+    setSharedDepartment((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value)
+        : [...prev, value]
+    );
   };
 
   const handleFileChange = (e) => {
@@ -106,13 +131,21 @@ export const NoteEditor = () => {
     setLoading(true);
     try {
       const fileId = uuidv4(); // Generate unique file ID
-      const fileExtension = file.name.split('.').pop(); // Get file extension
+      const fileExtension = file.name.split(".").pop(); // Get file extension
       const fileName = `${fileId}.${fileExtension}`; // Generate new filename
-      
+
       const storageRef = ref(storage, `uploads/${fileName}`);
       await uploadBytes(storageRef, file);
       const fileURL = await getDownloadURL(storageRef);
-    
+
+      // Add department to sharedDepartment if it's not already present and place it first
+      // setSharedDepartment((prev) => {
+      //   const newSharedDepartment = prev.includes(dropdownValues.Department)
+      //     ? prev
+      //     : [dropdownValues.Department, ...prev];
+      //   return newSharedDepartment;
+      // });
+
       const docRef = await addDoc(collection(db, "uploads"), {
         subjectCode,
         courseName: subjectName,
@@ -121,7 +154,8 @@ export const NoteEditor = () => {
         fileName, // Store new file name
         uploadedBy: auth.currentUser.email,
         status: "Pending",
-        dept: dropdownValues.Department,
+        dept: department,
+        shared: sharedDepartment,
         year: dropdownValues.Year,
         semester: dropdownValues.Semester,
         uploadedAt: new Date(),
@@ -233,6 +267,21 @@ export const NoteEditor = () => {
                     />
                   </div>
                   <div className={styles.divider}></div>
+                  <div className={styles.subjectContainer}>
+                    <label htmlFor="department" className={styles.subjectTitle}>
+                      Department:
+                    </label>
+                    <input
+                      id="department"
+                      type="text"
+                      value={department}
+                      // onChange={(e) => setSubjectCode(e.target.value)}
+                      className={styles.subjectInput}
+                      required
+                      readOnly
+                    />
+                  </div>
+                  <div className={styles.divider}></div>
                   <div className={styles.dropdownRow}>
                     {/* Dropdowns */}
                     {dropdownData.map((dropdown, index) => (
@@ -245,6 +294,23 @@ export const NoteEditor = () => {
                           handleDropdownChange(dropdown.title, value)
                         }
                       />
+                    ))}
+                  </div>
+                  <div className={styles.sharedDepartmentsContainer}>
+                    {sharedDepartment.map((dept, index) => (
+                      <div key={index} className={styles.sharedDepartmentTag}>
+                        {dept}
+                        <button
+                          className={styles.removeButton}
+                          onClick={() =>
+                            setSharedDepartment((prev) =>
+                              prev.filter((item) => item !== dept)
+                            )
+                          }
+                        >
+                          X
+                        </button>
+                      </div>
                     ))}
                   </div>
                   {/* <div>
@@ -260,8 +326,12 @@ export const NoteEditor = () => {
                   {/* <button type="submit" className={styles.sendButton}>
                     Send
                   </button> */}
-                  <button type="submit" disabled={loading} className={styles.sendButton}>
-                     {loading ? "Uploading..." : "Send"}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={styles.sendButton}
+                  >
+                    {loading ? "Uploading..." : "Send"}
                   </button>
                 </div>
               </div>
