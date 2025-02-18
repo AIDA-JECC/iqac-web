@@ -97,6 +97,11 @@ export const NoteEditor = () => {
   const handleDropdownChange = (title, value) => {
     setDropdownValues((prev) => ({ ...prev, [title]: value }));
 
+    console.log(title,value)
+    if (title !== "Share With" || value === department) {
+      return
+    }
+
     setSharedDepartment((prev) =>
       prev.includes(value)
         ? prev.filter((item) => item !== value)
@@ -137,14 +142,6 @@ export const NoteEditor = () => {
       const storageRef = ref(storage, `uploads/${fileName}`);
       await uploadBytes(storageRef, file);
       const fileURL = await getDownloadURL(storageRef);
-
-      // Add department to sharedDepartment if it's not already present and place it first
-      // setSharedDepartment((prev) => {
-      //   const newSharedDepartment = prev.includes(dropdownValues.Department)
-      //     ? prev
-      //     : [dropdownValues.Department, ...prev];
-      //   return newSharedDepartment;
-      // });
 
       const docRef = await addDoc(collection(db, "uploads"), {
         subjectCode,
@@ -296,7 +293,9 @@ export const NoteEditor = () => {
                       />
                     ))}
                   </div>
+                
                   <div className={styles.sharedDepartmentsContainer}>
+                  <div className={styles.subjectInput}>Share With:</div>
                     {sharedDepartment.map((dept, index) => (
                       <div key={index} className={styles.sharedDepartmentTag}>
                         {dept}
