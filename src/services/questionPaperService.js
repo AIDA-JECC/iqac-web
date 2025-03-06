@@ -262,6 +262,43 @@ export const getSubmissionsByDepartment = async (department) => {
   }
 };
 
+export const getSubmissionsBySharedDepartment = async (userDepartment) => {
+  try {
+    const collectionRef = collection(db, "uploads");
+    const q = query(collectionRef, where("shared", "array-contains", userDepartment));
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+
+      // Check if `uploadedAt` exists and is a Firestore timestamp
+      const uploadedAt = data.uploadedAt;
+      let date = null;
+      let time = null;
+
+      if (uploadedAt && uploadedAt.seconds) {
+        // Convert Firestore Timestamp to a Date object
+        const dateObj = new Date(uploadedAt.seconds * 1000); // seconds to milliseconds
+
+        // Format the date and time
+        date = dateObj.toLocaleDateString(); // e.g., "1/19/2025"
+        time = dateObj.toLocaleTimeString(); // e.g., "2:45:30 PM"
+      }
+
+      return {
+        id: doc.id,
+        ...data,
+        date, // Adds the formatted date
+        time, // Adds the formatted time
+      };
+    });
+  } catch (error) {
+    console.error("Error fetching submissions by shared department:", error);
+    throw error;
+  }
+};
+
+
 export const provideFeedback = async (id, feedback) => {
   try {
     if (typeof feedback !== "string") {
