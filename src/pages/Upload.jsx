@@ -97,9 +97,9 @@ export const NoteEditor = () => {
   const handleDropdownChange = (title, value) => {
     setDropdownValues((prev) => ({ ...prev, [title]: value }));
 
-    console.log(title,value)
+    console.log(title, value);
     if (title !== "Share With" || value === department) {
-      return
+      return;
     }
 
     setSharedDepartment((prev) =>
@@ -181,60 +181,55 @@ export const NoteEditor = () => {
   return (
     <div className={styles.editorContainer}>
       <form onSubmit={handleSubmit}>
-        {/* Header Section */}
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d53af9af6a4e53d74d06edc1f3049266467905105dc543ead92f679583e8d6c?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
-          className={styles.headerIcon}
-          alt="Note Editor Icon"
-        />
+        {/* ... Header and Welcome message are fine ... */}
         <div className={styles.contentWrapper}>
           <h1 className={styles.userName}>
             Welcome, {extractName(auth.currentUser.email)}
           </h1>
           <div className={styles.mainContent}>
             <div className={styles.contentGrid}>
-              {/* Preview Section */}
+              {/* Preview Column (No changes here) */}
               <div className={styles.previewColumn}>
-                <div className={styles.previewSection}>
-                  <h2 className={styles.previewTitle}>Preview</h2>
-                  <div className={styles.previewBox}>
-                    {fileURL ? (
-                      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                        {/* <div className={styles.pdfContainer}> */}
-                        <Viewer fileUrl={fileURL} />
-                        {/* </div> */}
-                      </Worker>
-                    ) : (
-                      <p>No file selected</p>
-                    )}
+                {
+                  <div className={styles.previewSection}>
+                    <h2 className={styles.previewTitle}>Preview</h2>
+                    <div className={styles.previewBox}>
+                      {fileURL ? (
+                        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                          {/* <div className={styles.pdfContainer}> */}
+                          <Viewer fileUrl={fileURL} />
+                          {/* </div> */}
+                        </Worker>
+                      ) : (
+                        <p>No file selected</p>
+                      )}
+                    </div>
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      style={{ display: "none" }}
+                      accept="application/pdf"
+                    />
+                    <button
+                      type="button"
+                      className={styles.uploadButton}
+                      onClick={handleFileUpload}
+                    >
+                      Upload File
+                    </button>
                   </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    accept="application/pdf"
-                  />
-                  <button
-                    type="button"
-                    className={styles.uploadButton}
-                    onClick={handleFileUpload}
-                  >
-                    Upload File
-                  </button>
-                </div>
+                }
               </div>
 
-              {/* Details Section */}
+              {/* ======== MODIFIED DETAILS SECTION ======== */}
               <div className={styles.detailsColumn}>
                 <div className={styles.detailsSection}>
                   <h2 className={styles.detailsTitle}>Details</h2>
-                  <div className={styles.subjectContainer}>
-                    <label
-                      htmlFor="subjectName"
-                      className={styles.subjectTitle}
-                    >
+
+                  {/* --- Field Group for Subject Title --- */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="subjectName" className={styles.formLabel}>
                       Subject Title:
                     </label>
                     <input
@@ -242,16 +237,14 @@ export const NoteEditor = () => {
                       type="text"
                       value={subjectName}
                       onChange={(e) => setSubjectName(e.target.value)}
-                      className={styles.subjectInput}
+                      className={styles.formInput}
                       required
                     />
                   </div>
-                  <div className={styles.divider}></div>
-                  <div className={styles.subjectContainer}>
-                    <label
-                      htmlFor="subjectCode"
-                      className={styles.subjectTitle}
-                    >
+
+                  {/* --- Field Group for Subject Code --- */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="subjectCode" className={styles.formLabel}>
                       Subject Code:
                     </label>
                     <input
@@ -259,28 +252,28 @@ export const NoteEditor = () => {
                       type="text"
                       value={subjectCode}
                       onChange={(e) => setSubjectCode(e.target.value)}
-                      className={styles.subjectInput}
+                      className={styles.formInput}
                       required
                     />
                   </div>
-                  <div className={styles.divider}></div>
-                  <div className={styles.subjectContainer}>
-                    <label htmlFor="department" className={styles.subjectTitle}>
+
+                  {/* --- Field Group for Department --- */}
+                  <div className={styles.formGroup}>
+                    <label htmlFor="department" className={styles.formLabel}>
                       Department:
                     </label>
                     <input
                       id="department"
                       type="text"
                       value={department}
-                      // onChange={(e) => setSubjectCode(e.target.value)}
-                      className={styles.subjectInput}
+                      className={styles.formInput}
                       required
                       readOnly
                     />
                   </div>
-                  <div className={styles.divider}></div>
+
+                  {/* --- Dropdown Row --- */}
                   <div className={styles.dropdownRow}>
-                    {/* Dropdowns */}
                     {dropdownData.map((dropdown, index) => (
                       <DropdownField
                         key={index}
@@ -293,45 +286,49 @@ export const NoteEditor = () => {
                       />
                     ))}
                   </div>
-                
-                  <div className={styles.sharedDepartmentsContainer}>
-                  <div className={styles.subjectInput}>Share With:</div>
-                    {sharedDepartment.map((dept, index) => (
-                      <div key={index} className={styles.sharedDepartmentTag}>
-                        {dept}
-                        <button
-                          className={styles.removeButton}
-                          onClick={() =>
-                            setSharedDepartment((prev) =>
-                              prev.filter((item) => item !== dept)
-                            )
-                          }
-                        >
-                          X
-                        </button>
-                      </div>
-                    ))}
+
+                  {/* --- Shared Departments Section --- */}
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Share With:</label>
+                    <div className={styles.sharedDepartmentsContainer}>
+                      {sharedDepartment.length > 0 ? (
+                        sharedDepartment.map((dept, index) => (
+                          <div
+                            key={index}
+                            className={styles.sharedDepartmentTag}
+                          >
+                            {dept}
+                            <button
+                              type="button" // Important for buttons inside forms
+                              className={styles.removeButton}
+                              onClick={() =>
+                                setSharedDepartment((prev) =>
+                                  prev.filter((item) => item !== dept)
+                                )
+                              }
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <span className={styles.noSelectionText}>
+                          No other departments selected
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  {/* <div>
-                    <label htmlFor="description">Description:</label>
-                    <textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className={styles.descriptionBox}
-                      rows={4}
-                    />
-                  </div> */}
-                  {/* <button type="submit" className={styles.sendButton}>
-                    Send
-                  </button> */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={styles.sendButton}
-                  >
-                    {loading ? "Uploading..." : "Send"}
-                  </button>
+
+                  {/* --- Form Actions (for the button) --- */}
+                  <div className={styles.formActions}>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className={styles.sendButton}
+                    >
+                      {loading ? "Uploading..." : "Send"}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
