@@ -1,202 +1,158 @@
 import { useState, useEffect, useRef } from "react";
-import styles from "./Upload.module.css";
+import styles from "./TeacherFeedback.module.css";
 import { db, auth } from "../firebase"; // Firebase configuration
 import { doc, updateDoc } from "firebase/firestore";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
-import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
-import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import { getBySubmissionId } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { departmentsList } from "../services/questionPaperService";
+
+// Helper to extract the user's first name from email
 const extractName = (email) => {
+  if (!email) return "User";
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 };
 
-const DropdownField = ({ title, options, selectedValue, onChange }) => {
-  return (
-    <div className={styles.dropdownContainer}>
-      <label className={styles.dropdownLabel}>{title}:</label>
-      <select
-        className={styles.dropdown}
-        value={selectedValue}
-        onChange={(e) => onChange(e.target.value)}
-        required
-      >
-        {options.map((option, index) => (
-          <option key={index} value={option.value}>
-            {option.value}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-};
-
-const dropdownData = [
-  {
-    title: "Department",
-    options: departmentsList.map((department) => ({ value: department })),
-  },
-  {
-    title: "Year",
-    options: [{ value: "1" }, { value: "2" }, { value: "3" }, { value: "4" }],
-  },
-  {
-    title: "Semester",
-    options: [
-      { value: "1" },
-      { value: "2" },
-      { value: "3" },
-      { value: "4" },
-      { value: "5" },
-      { value: "6" },
-      { value: "7" },
-      { value: "8" },
-    ],
-  },
-];
+// Reusable Dropdown Component
+const DropdownField = ({
+  title,
+  options,
+  selectedValue,
+  onChange,
+  disabled,
+}) => (
+  <div className={styles.dropdownContainer}>
+    <label className={styles.formLabel}>{title}:</label>
+    <select
+      className={styles.formInput} // Using unified formInput style
+      value={selectedValue}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      required
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </div>
+);
 
 export const TeacherFeedback = () => {
   const { id } = useParams();
-  const [feedbackMessages, setFeedbackMessages] = useState([]);
+  const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+
+  // State Management
   const [status, setStatus] = useState("");
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [description, setDescription] = useState("");
-  const [dropdownValues, setDropdownValues] = useState({
-    Department: "AD",
-    Year: "2",
-    Semester: "4",
-  });
+  const [department, setDepartment] = useState("AD");
+  const [year, setYear] = useState("2");
+  const [semester, setSemester] = useState("4");
+  const [sharedDepartments, setSharedDepartments] = useState([]); // State for checkboxes
+  const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [file, setFile] = useState(null);
-  const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
-  const fileInputRef = useRef(null);
-  const navigate = useNavigate();
+  const [fileURL, setFileURL] = useState(null);
+
+  const isRejected = status === "Rejected";
 
   useEffect(() => {
     const fetchSubmissionData = async () => {
       try {
-        // Fetch submission data from Firestore
         const result = await getBySubmissionId(id);
-        console.log(result.courseName);
+        if (!result) {
+          toast.error("Submission not found.");
+          navigate("/faculty");
+          return;
+        }
 
-        // Set basic submission data
-        setSubjectName(result?.courseName || "");
-        setSubjectCode(result?.subjectCode || "");
-        setDescription(result?.description || "");
-        setStatus(result?.status || "");
-
-        // Set dropdown values (Department, Year, Semester)
-        setDropdownValues({
-          Department: result?.dept || "AD",
-          Year: result?.year || "2",
-          Semester: result?.semester || "4",
-        });
-
-        // Set feedback messages
+        // Set state from fetched data
+        setSubjectName(result.courseName || "");
+        setSubjectCode(result.subjectCode || "");
+        setDescription(result.description || "");
+        setStatus(result.status || "");
+        setDepartment(result.dept || "AD");
+        setYear(result.year || "2");
+        setSemester(result.semester || "4");
+        setSharedDepartments(result.sharedDepartments || []);
         setFeedbackMessages(
-          Array.isArray(result?.feedback) ? result.feedback : []
+          Array.isArray(result.feedback) ? result.feedback : []
         );
 
-        // Check if fileURL exists in Firestore and fetch the file URL from Firebase Storage
-        if (result?.fileURL) {
-          setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
-        } else if (result?.filePath) {
-          // If filePath exists (without fileURL), get the file URL from Firebase Storage
-          const storage = getStorage(); // Initialize Firebase Storage
-          const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
-
-          try {
-            const url = await getDownloadURL(fileRef); // Fetch the file URL
-            setFileURL(url); // Update state with the file URL
-          } catch (error) {
-            console.error(
-              "Error fetching file URL from Firebase Storage:",
-              error
-            );
-            setFileURL(null); // Handle error by setting URL to null
-          }
-        } else {
-          setFileURL(null); // If no file exists, set the URL to null
+        // Fetch PDF file for viewing
+        if (result.fileURL) {
+          const storage = getStorage();
+          const fileRef = ref(storage, result.fileURL);
+          const url = await getDownloadURL(fileRef);
+          setFileURL(url);
         }
       } catch (error) {
         console.error("Error fetching submission data:", error);
+        toast.error("Failed to load submission data.");
       }
     };
     fetchSubmissionData();
-  }, [id]);
+  }, [id, navigate]);
 
-  const handleDropdownChange = (title, value) => {
-    setDropdownValues((prev) => ({ ...prev, [title]: value }));
-  };
-
+  // Handler for file input change
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
-    if (selectedFile) {
+    if (selectedFile && selectedFile.type === "application/pdf") {
       setFile(selectedFile);
-
-      // Generate a URL for the selected file
-      if (selectedFile.type === "application/pdf") {
-        const url = URL.createObjectURL(selectedFile);
-        setFileURL(url);
-      } else {
-        setFileURL(null); // Reset the preview if the file is not a PDF
-      }
+      setFileURL(URL.createObjectURL(selectedFile));
+    } else if (selectedFile) {
+      toast.error("Please select a valid PDF file.");
     }
   };
 
-  const handleFileUpload = () => {
-    fileInputRef.current.click();
+  // Handler for shared department checkbox changes
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    setSharedDepartments((prev) =>
+      checked ? [...prev, value] : prev.filter((dept) => dept !== value)
+    );
   };
 
+  // Handler for form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!subjectName || !subjectCode || !file) {
-      toast.error("Please fill out all required fields.");
+    if (isRejected && !file) {
+      toast.error("Please upload a new file to resubmit.");
       return;
     }
 
     try {
-      // Reference the document to update using the ID from the URL params
       const docRef = doc(db, "uploads", id);
-
-      // Update the document with new data
       await updateDoc(docRef, {
         subjectCode,
         courseName: subjectName,
         description,
-        // teacherName: extractName(auth.currentUser.email),
-        fileName: file.name,
-        uploadedBy: auth.currentUser.email,
-        status: "Pending",
-        dept: dropdownValues.Department,
-        year: dropdownValues.Year,
-        semester: dropdownValues.Semester,
+        dept: department,
+        year,
+        semester,
+        sharedDepartments, // Save shared departments
+        status: "Pending", // Reset status to Pending on resubmission
         uploadedAt: new Date(),
+        // Note: You would handle file re-upload logic here,
+        // which typically involves uploading to Storage and then updating the URL in Firestore.
+        // This example focuses on updating the document fields.
       });
 
-      toast.success("File updated successfully!");
-      console.log("Document updated with ID: ", id);
-
-      // Reset form fields
-      setSubjectCode("");
-      setSubjectName("");
-      setDescription("");
-      setDropdownValues({ Department: "AD", Year: "2", Semester: "4" });
-      setFile(null);
-      setFileURL(null);
-
-      // Navigate back to the faculty page or desired route
+      toast.success("Submission updated successfully!");
       navigate("/faculty");
     } catch (error) {
-      console.error("Error updating file:", error);
-      toast.error("Update failed. Please check your permissions.");
+      console.error("Error updating submission:", error);
+      toast.error("Update failed. Please try again.");
     }
   };
 
@@ -212,131 +168,167 @@ export const TeacherFeedback = () => {
   };
 
   return (
-    <div className={styles.editorContainer}>
-      <form onSubmit={handleSubmit}>
-        {/* Header Section */}
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d53af9af6a4e53d74d06edc1f3049266467905105dc543ead92f679583e8d6c?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
-          className={styles.headerIcon}
-          alt="Note Editor Icon"
-        />
-        <div className={styles.contentWrapper}>
-          <h1 className={styles.userName}>
-            Welcome, {extractName(auth.currentUser.email)}
-          </h1>
-          <div className={styles.mainContent}>
-            <div className={styles.contentGrid}>
-              {/* Preview Section */}
-              <div className={styles.previewColumn}>
-                <div className={styles.previewSection}>
-                  <h2 className={styles.previewTitle}>Preview</h2>
-                  <div className={styles.previewBox}>
-                    {fileURL ? (
-                      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                        <div className={styles.pdfContainer}>
-                          <Viewer fileUrl={fileURL} />
-                        </div>
-                      </Worker>
-                    ) : (
-                      <p>No file selected</p>
-                    )}
+    <div className={styles.pageContainer}>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Submission Details</h1>
+        <h2 className={styles.userName}>
+          Welcome, {extractName(auth.currentUser?.email)}
+        </h2>
+      </div>
 
-                  </div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    style={{ display: "none" }}
-                    accept="application/pdf"
-                  />
-                  {fileURL && (
-                    <button
-                    className={styles.printButton}
-                    onClick={handlePrint}
-                    >
-                      Print File
-                    </button>
-                  )}
-                  {status === "Rejected" && (
-                    <button
-                      type="button"
-                      className={styles.uploadButton}
-                      onClick={handleFileUpload}
-                    >
-                      Upload File
-                    </button>
-                  )}
+      <form className={styles.contentGrid} onSubmit={handleSubmit}>
+        {/* Left Column: PDF Preview & Actions */}
+        <div className={styles.previewColumn}>
+          <h3 className={styles.columnTitle}>Document Preview</h3>
+          <div className={styles.previewBox}>
+            {fileURL ? (
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                <div className={styles.pdfContainer}>
+                  <Viewer fileUrl={fileURL} />
                 </div>
+              </Worker>
+            ) : (
+              <p className={styles.noFileText}>No file available for preview</p>
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            accept="application/pdf"
+          />
+          <div className={styles.buttonGroup}>
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={handlePrint}
+              disabled={!fileURL}
+            >
+              Print
+            </button>
+            {isRejected && (
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => fileInputRef.current.click()}
+              >
+                Upload New File
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Details, Feedback & Submission */}
+        <div className={styles.detailsColumn}>
+          {/* --- Feedback Section --- */}
+          {feedbackMessages.length > 0 && (
+            <div className={styles.card}>
+              <h3 className={styles.columnTitle}>Reviewer Feedback</h3>
+              <div className={styles.feedbackContainer}>
+                {feedbackMessages.map((message, index) => (
+                  <FeedbackMessage key={index} message={message} />
+                ))}
               </div>
-              {/* Details Section */}
+            </div>
+          )}
 
-              <div className={styles.detailsColumn}>
-                <div className={styles.feedbackSection}>
-                  <h2 className={styles.feedbackTitle}>Feedback</h2>
-                  {(feedbackMessages || []).map((message, index) => (
-                    <FeedbackMessage key={index} message={message} />
-                  ))}
-                </div>
-                <div className={styles.detailsSection}>
-                  <h2 className={styles.detailsTitle}>Details</h2>
-                  <div className={styles.subjectContainer}>
-                    <label
-                      htmlFor="subjectName"
-                      className={styles.subjectTitle}
-                    >
-                      Subject Title:
-                    </label>
+          {/* --- Details Section --- */}
+          <div className={styles.card}>
+            <h3 className={styles.columnTitle}>Details</h3>
+            <div className={styles.formGrid}>
+              {/* Subject Title */}
+              <div className={styles.formGroup}>
+                <label htmlFor="subjectName" className={styles.formLabel}>
+                  Subject Title:
+                </label>
+                <input
+                  id="subjectName"
+                  type="text"
+                  value={subjectName}
+                  onChange={(e) => setSubjectName(e.target.value)}
+                  className={styles.formInput}
+                  readOnly={!isRejected}
+                  required
+                />
+              </div>
+
+              {/* Subject Code */}
+              <div className={styles.formGroup}>
+                <label htmlFor="subjectCode" className={styles.formLabel}>
+                  Subject Code:
+                </label>
+                <input
+                  id="subjectCode"
+                  type="text"
+                  value={subjectCode}
+                  onChange={(e) => setSubjectCode(e.target.value)}
+                  className={styles.formInput}
+                  readOnly={!isRejected}
+                  required
+                />
+              </div>
+
+              {/* Department, Year, Semester Dropdowns */}
+              <DropdownField
+                title="Department"
+                options={departmentsList.map((d) => ({ value: d, label: d }))}
+                selectedValue={department}
+                onChange={setDepartment}
+                disabled={!isRejected}
+              />
+              <DropdownField
+                title="Year"
+                options={["1", "2", "3", "4"].map((y) => ({
+                  value: y,
+                  label: `Year ${y}`,
+                }))}
+                selectedValue={year}
+                onChange={setYear}
+                disabled={!isRejected}
+              />
+              <DropdownField
+                title="Semester"
+                options={["1", "2", "3", "4", "5", "6", "7", "8"].map((s) => ({
+                  value: s,
+                  label: `Sem ${s}`,
+                }))}
+                selectedValue={setSemester}
+                disabled={!isRejected}
+              />
+            </div>
+
+            {/* --- Shared Departments Checkbox Section --- */}
+            <div className={styles.formGroupVertical}>
+              <label className={styles.formLabel}>
+                Share with other departments:
+              </label>
+              <div className={styles.checkboxGrid}>
+                {departmentsList.map((dept) => (
+                  <div key={dept} className={styles.checkboxItem}>
                     <input
-                      id="subjectName"
-                      type="text"
-                      value={subjectName}
-                      onChange={(e) => setSubjectName(e.target.value)}
-                      className={styles.subjectInput}
-                      required
+                      type="checkbox"
+                      id={`dept-${dept}`}
+                      value={dept}
+                      checked={sharedDepartments.includes(dept)}
+                      onChange={handleCheckboxChange}
+                      disabled={!isRejected || dept === department} // Disable if not rejected or if it's the primary dept
                     />
+                    <label htmlFor={`dept-${dept}`}>{dept}</label>
                   </div>
-                  <div className={styles.divider}></div>
-                  <div className={styles.subjectContainer}>
-                    <label
-                      htmlFor="subjectCode"
-                      className={styles.subjectTitle}
-                    >
-                      Subject Code:
-                    </label>
-                    <input
-                      id="subjectCode"
-                      type="text"
-                      value={subjectCode}
-                      onChange={(e) => setSubjectCode(e.target.value)}
-                      className={styles.subjectInput}
-                      required
-                    />
-                  </div>
-                  <div className={styles.divider}></div>
-                  <div className={styles.dropdownRow}>
-                    {/* Dropdowns */}
-                    {dropdownData.map((dropdown, index) => (
-                      <DropdownField
-                        key={index}
-                        title={dropdown.title}
-                        options={dropdown.options}
-                        selectedValue={dropdownValues[dropdown.title]}
-                        onChange={(value) =>
-                          handleDropdownChange(dropdown.title, value)
-                        }
-                      />
-                    ))}
-                  </div>
-                  {status === "Rejected" && (
-                    <button type="submit" className={styles.sendButton}>
-                      Send
-                    </button>
-                  )}
-                </div>
+                ))}
               </div>
             </div>
           </div>
+
+          {/* --- Action Buttons --- */}
+          {isRejected && (
+            <div className={styles.formActions}>
+              <button type="submit" className={styles.primaryButton}>
+                Resubmit for Approval
+              </button>
+            </div>
+          )}
         </div>
       </form>
     </div>
@@ -344,12 +336,3 @@ export const TeacherFeedback = () => {
 };
 
 export default TeacherFeedback;
-
-{
-  /* <div className={styles.feedbackSection}>
-  <h2 className={styles.feedbackTitle}>Feedback</h2>
-  {feedbackMessages.map((message, index) => (
-    <FeedbackMessage key={index} message={message} />
-  ))}
-</div>; */
-}
