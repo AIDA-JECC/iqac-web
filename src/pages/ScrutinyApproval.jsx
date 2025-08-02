@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import styles from "./Upload.module.css";
+import { useState, useEffect } from "react";
+import styles from "./ScrutinyApproval.module.css";
 import { auth } from "../firebase"; // Firebase configuration
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -13,101 +13,176 @@ import {
 } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
 
+// PDF generation libraries
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+
 const extractName = (email) => {
+  if (!email) return "Scrutinizer";
   const namePart = email.split("@")[0];
   const firstName = namePart.split(".")[0];
   return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
 };
 
+const scrutinyChecklistItems = [
+  "Name of examination, semester, month, and year are specified correctly.",
+  "QP Code, Subject Code, and Subject Name are correctly mentioned.",
+  "Maximum marks and duration of examination are specified correctly.",
+  "Instructions to candidates are clearly written.",
+  "Relevant CO(s) statements with its BTL are clearly stated.",
+  "Each question is mapped with corresponding Course Outcomes (COs).",
+  "Each question is categorized into the appropriate Bloom’s Taxonomy Level (BTL).",
+  "Units/modules are proportionally represented.",
+  "Questions are clearly worded and unambiguous.",
+  "No grammatical, spelling, or formatting errors.",
+  "No duplication of questions within the paper.",
+  "Tables, figures, and equations are clearly mentioned and properly labeled.",
+  "Mark distribution per question is appropriate and clearly mentioned.",
+  "Question paper follows the pattern specified in the course syllabus.",
+  "Choice of questions is appropriately provided (if applicable).",
+];
+
 export const ScrutinyApproval = () => {
   const { id } = useParams();
-  const [feedbackMessages, setFeedbackMessages] = useState([""]);
-  const [status, setStatus] = useState("");
+  const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [facultyEmail, setFacultyEmail] = useState("");
-  const [newFeedback, setNewFeedback] = useState(""); // Store single input feedback
+  const [newFeedback, setNewFeedback] = useState("");
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
   const [department, setDepartment] = useState("");
   const [semester, setSemester] = useState("");
   const [year, setYear] = useState("");
-  const [file, setFile] = useState(null);
-  const [fileURL, setFileURL] = useState(null); // Store the file URL for the PDF preview
-  const fileInputRef = useRef(null);
+  const [fileURL, setFileURL] = useState(null);
   const navigate = useNavigate();
 
+  const [checkedState, setCheckedState] = useState(
+    new Array(scrutinyChecklistItems.length).fill(false)
+  );
+
+  // ✅ MODIFIED: This useEffect hook now fetches and applies the saved checklist state.
   useEffect(() => {
     const fetchSubmissionData = async () => {
       try {
         const result = await getBySubmissionId(id);
+        if (result) {
+          // --- Set standard submission details ---
+          setFacultyEmail(result.teacherName || "");
+          setSubjectName(result.courseName || "");
+          setSubjectCode(result.subjectCode || "");
+          setDepartment(result.dept || "");
+          setSemester(result.semester || "");
+          setYear(result.year || "");
+          setFileURL(result.fileURL || null);
+          setFeedbackMessages(
+            Array.isArray(result.feedback) ? result.feedback : []
+          );
 
-        setFacultyEmail(result?.teacherName || "");
-        setSubjectName(result?.courseName || "");
-        setSubjectCode(result?.subjectCode || "");
-        setDepartment(result?.dept || "");
-        setSemester(result?.semester || "");
-        setYear(result?.year || "");
-        // setDescription(result?.description || "");
-        setStatus(result?.status || "");
-
-        // Ensure feedbackMessages is always an array
-        if (result?.fileURL) {
-          setFileURL(result.fileURL); // If fileURL is stored in Firestore, use it directly
-        } else if (result?.filePath) {
-          // If filePath exists (without fileURL), get the file URL from Firebase Storage
-          const storage = getStorage(); // Initialize Firebase Storage
-          const fileRef = ref(storage, result.filePath); // Create a reference to the file in Firebase Storage
-
-          try {
-            const url = await getDownloadURL(fileRef); // Fetch the file URL
-            setFileURL(url); // Update state with the file URL
-          } catch (error) {
-            console.error(
-              "Error fetching file URL from Firebase Storage:",
-              error
+          // --- ⬇️ NEW: Check for and apply the saved scrutiny report ⬇️ ---
+          if (result.scrutinyReport && Array.isArray(result.scrutinyReport)) {
+            // Create a boolean array based on the saved report from Firebase
+            const initialCheckedState = scrutinyChecklistItems.map(
+              (itemText) => {
+                const savedItem = result.scrutinyReport.find(
+                  (reportItem) => reportItem.requirement === itemText
+                );
+                // If the item was found in the report, set its state to true if status is "Yes", otherwise false.
+                // If it wasn't found (e.g., new checklist item), default to false.
+                return savedItem ? savedItem.status === "Yes" : false;
+              }
             );
-            setFileURL(null); // Handle error by setting URL to null
+            setCheckedState(initialCheckedState);
           }
-        } else {
-          setFileURL(null); // If no file exists, set the URL to null
+          // --- ⬆️ End of new logic ⬆️ ---
         }
-        setFeedbackMessages(
-          Array.isArray(result?.feedback) ? result.feedback : []
-        );
       } catch (error) {
         console.error("Error fetching submission data:", error);
+        toast.error("Failed to fetch submission data.");
       }
     };
     fetchSubmissionData();
   }, [id]);
 
+  const handleCheckboxChange = (position) => {
+    const updatedCheckedState = checkedState.map((item, index) =>
+      index === position ? !item : item
+    );
+    setCheckedState(updatedCheckedState);
+  };
+
+  const handleGenerateReport = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text("Scrutiny Verification Report", 14, 22);
+    doc.setFontSize(11);
+    doc.text(`Subject: ${subjectName} (${subjectCode})`, 14, 32);
+    doc.text(`Faculty: ${facultyEmail}`, 14, 38);
+    doc.text(
+      `Department: ${department} | Year: ${year} | Semester: ${semester}`,
+      14,
+      44
+    );
+
+    const tableColumn = ["#", "Requirement", "Status"];
+    const tableRows = scrutinyChecklistItems.map((item, index) => [
+      index + 1,
+      item,
+      checkedState[index] ? "Verified" : "Pending",
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 55,
+      headStyles: { fillColor: [21, 44, 112] },
+      columnStyles: {
+        0: { cellWidth: 10, halign: "center" },
+        2: { cellWidth: 25, halign: "center" },
+      },
+    });
+
+    const date = new Date().toLocaleDateString("en-IN");
+    doc.setFontSize(10);
+    doc.text(
+      `Report generated by: ${extractName(auth.currentUser?.email)} on ${date}`,
+      14,
+      doc.lastAutoTable.finalY + 10
+    );
+    doc.save(`Scrutiny-Report-${subjectCode}-${Date.now()}.pdf`);
+    toast.success("Scrutiny report downloaded!");
+  };
+
   const handleApprove = async () => {
+    const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
+      requirement: item,
+      status: checkedState[index] ? "Yes" : "No",
+    }));
+
     try {
-      await approveSubmission(id);
+      await approveSubmission(id, scrutinyReport);
+      toast.success("Submission approved successfully!");
       navigate("/scrutiny");
     } catch (error) {
+      toast.error("Failed to approve submission.");
       console.error(error);
     }
   };
 
   const handleReject = async () => {
+    if (newFeedback.trim() === "") {
+      toast.error("Please provide feedback before rejecting.");
+      return;
+    }
+    const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
+      requirement: item,
+      status: checkedState[index] ? "Yes" : "No",
+    }));
+
     try {
-      if (newFeedback.trim() !== "") {
-        // Append new feedback instead of replacing the array
-        setFeedbackMessages((prevFeedback) => [
-          ...(prevFeedback || []),
-          newFeedback,
-        ]);
-
-        // Update Firestore
-        await provideFeedback(id, newFeedback);
-      } else {
-        // toast.error("Please enter feedback before rejecting.");
-        alert("Please enter feedback before rejecting.");
-        return;
-      }
-
+      await provideFeedback(id, newFeedback, scrutinyReport);
+      toast.info("Submission rejected with feedback.");
       navigate("/scrutiny");
     } catch (error) {
+      toast.error("Failed to reject submission.");
       console.error(error);
     }
   };
@@ -116,7 +191,10 @@ export const ScrutinyApproval = () => {
     if (fileURL) {
       const printWindow = window.open(fileURL, "_blank");
       if (printWindow) {
-        printWindow.onload = () => printWindow.print();
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
       }
     } else {
       toast.error("No file available to print.");
@@ -125,145 +203,161 @@ export const ScrutinyApproval = () => {
 
   return (
     <div className={styles.editorContainer}>
-      <form>
-        {/* Header Section */}
-        <img
-          loading="lazy"
-          src="https://cdn.builder.io/api/v1/image/assets/TEMP/6d53af9af6a4e53d74d06edc1f3049266467905105dc543ead92f679583e8d6c?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
-          className={styles.headerIcon}
-          alt="Note Editor Icon"
-        />
-        <div className={styles.contentWrapper}>
-          <h1 className={styles.userName}>
-            Welcome, {extractName(auth.currentUser.email)}
-          </h1>
-          <div className={styles.mainContent}>
-            <div className={styles.contentGrid}>
-              {/* Preview Section */}
-              <div className={styles.previewColumn}>
-                <div className={styles.previewSection}>
-                  <h2 className={styles.previewTitle}>Preview</h2>
-                  <div className={styles.previewBox}>
-                    {fileURL ? (
-                      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                        <Viewer fileUrl={fileURL} />
-                      </Worker>
-                    ) : (
-                      <p>No file selected</p>
-                    )}
-                  </div>
+      <div className={styles.contentWrapper}>
+        <h1 className={styles.pageTitle}>Scrutiny & Approval</h1>
+        <div className={styles.mainContent}>
+          <div className={styles.contentGrid}>
+            <div className={styles.previewColumn}>
+              <div className={styles.previewCard}>
+                <h2 className={styles.cardTitle}>Document Preview</h2>
+                <div className={styles.previewBox}>
+                  {fileURL ? (
+                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                      <Viewer fileUrl={fileURL} />
+                    </Worker>
+                  ) : (
+                    <p>Loading document...</p>
+                  )}
                 </div>
                 {fileURL && (
-                  <button className={styles.printButton} onClick={handlePrint}>
-                    Print File
+                  <button
+                    type="button"
+                    className={`${styles.actionButton} ${styles.printButton}`}
+                    onClick={handlePrint}
+                  >
+                    Print Original Document
                   </button>
                 )}
               </div>
-              {/* Details Section */}
-              <div className={styles.detailsColumn}>
-                <div className={styles.detailsSection}>
-                  <h2 className={styles.detailsTitle}>Details</h2>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>Faculty Name:</label>
-                    <input
-                      type="text"
-                      value={facultyEmail}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>Department:</label>
-                    <input
-                      type="text"
-                      value={department}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>Semester:</label>
-                    <input
-                      type="text"
-                      value={semester}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>Year:</label>
-                    <input
-                      type="text"
-                      value={year}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>
-                      Subject Title:
-                    </label>
-                    <input
-                      type="text"
-                      value={subjectName}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                  <div className={styles.subjectContainer}>
-                    <label className={styles.subjectTitle}>Subject Code:</label>
-                    <input
-                      type="text"
-                      value={subjectCode}
-                      className={styles.subjectInput}
-                      readOnly
-                    />
-                  </div>
-                </div>
-                <div className={styles.feedbackSection}>
-                  <h2 className={styles.feedbackTitle}>Feedback</h2>
-                  {Array.isArray(feedbackMessages) &&
-                  feedbackMessages.length > 0 ? (
-                    feedbackMessages.map((message, index) => (
-                      <FeedbackMessage key={index} message={message} />
-                    ))
-                  ) : (
-                    <p>No previous feedback messages available.</p>
-                  )}
-                </div>
-                {/* Feedback input button */}
-                <div className={styles.subjectContainer}>
-                  {/* <label className={styles.subjectTitle}>New Feedback:</label> */}
+            </div>
+
+            <div className={styles.detailsColumn}>
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Submission Details</h2>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Faculty Name:</label>
                   <input
                     type="text"
-                    value={newFeedback}
-                    onChange={(e) => setNewFeedback(e.target.value)}
-                    placeholder=" Provide feedback"
-                    className={styles.subjectInput}
+                    value={facultyEmail}
+                    className={styles.formInput}
+                    readOnly
                   />
                 </div>
-                <div className={styles.divider}></div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Subject:</label>
+                  <input
+                    type="text"
+                    value={subjectName}
+                    className={styles.formInput}
+                    readOnly
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Subject Code:</label>
+                  <input
+                    type="text"
+                    value={subjectCode}
+                    className={styles.formInput}
+                    readOnly
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Department:</label>
+                  <input
+                    type="text"
+                    value={department}
+                    className={styles.formInput}
+                    readOnly
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Year / Sem:</label>
+                  <input
+                    type="text"
+                    value={`${year} / ${semester}`}
+                    className={styles.formInput}
+                    readOnly
+                  />
+                </div>
+              </div>
+
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Verification Checklist</h2>
+                <div className={styles.checklistContainer}>
+                  {scrutinyChecklistItems.map((item, index) => (
+                    <label
+                      className={styles.checklistItem}
+                      key={index}
+                      htmlFor={`checkbox-${index}`}
+                    >
+                      <input
+                        type="checkbox"
+                        id={`checkbox-${index}`}
+                        checked={checkedState[index]}
+                        onChange={() => handleCheckboxChange(index)}
+                        className={styles.checklistCheckbox}
+                      />
+                      <span className={styles.checklistText}>{item}</span>
+                    </label>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className={`${styles.actionButton} ${styles.generateReportButton}`}
+                  onClick={handleGenerateReport}
+                >
+                  Generate & Download Scrutiny Report
+                </button>
+              </div>
+
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>Feedback History</h2>
+                <div className={styles.feedbackList}>
+                  {feedbackMessages.length > 0 ? (
+                    feedbackMessages.map((msg, index) => (
+                      <FeedbackMessage key={index} message={msg} />
+                    ))
+                  ) : (
+                    <p className={styles.noFeedbackText}>
+                      No previous feedback messages.
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className={styles.card}>
+                <h2 className={styles.cardTitle}>
+                  Provide New Feedback (if rejecting)
+                </h2>
+                <textarea
+                  value={newFeedback}
+                  onChange={(e) => setNewFeedback(e.target.value)}
+                  placeholder="Enter feedback here before rejecting..."
+                  className={styles.formInput}
+                  rows={4}
+                />
+              </div>
+
+              <div className={styles.finalActions}>
+                <button
+                  type="button"
+                  className={`${styles.actionButton} ${styles.rejectButton}`}
+                  onClick={handleReject}
+                >
+                  Reject with Feedback
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.actionButton} ${styles.approveButton}`}
+                  onClick={handleApprove}
+                >
+                  Approve
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <div className={styles.contentGrid}>
-          <button
-            type="button"
-            className={styles.sendButton}
-            onClick={handleApprove}
-          >
-            Approve
-          </button>
-          <button
-            type="button"
-            className={styles.sendButton}
-            onClick={handleReject}
-          >
-            Reject
-          </button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };
