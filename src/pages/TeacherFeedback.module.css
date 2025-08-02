@@ -1,233 +1,230 @@
-.container {
-  background-color: rgb(245, 246, 248);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 24px 0 111px;
+/* === Main Layout & Typography === */
+.pageContainer {
+  background-color: #f8f9fa;
+  padding: 2rem 3rem;
+  font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  min-height: 100vh;
 }
 
-.headerIcon {
-  aspect-ratio: 1;
-  object-fit: contain;
-  object-position: center;
-  width: 24px;
-  align-self: end;
-  margin-right: 28px;
+.header {
+  margin-bottom: 2rem;
 }
 
-.content {
-  display: flex;
-  margin-top: 20px;
-  width: 100%;
-  flex-direction: column;
-  align-items: start;
-  padding: 0 56px;
-}
-
-.teacherName {
-  color: rgb(107, 107, 107);
-  letter-spacing: 0.36px;
-  margin-left: 14px;
-  font: 600 36px Poppins, sans-serif;
-}
-
-.mainSection {
-  margin-top: 73px;
-  display: flex;
-  gap: 20px;
-}
-
-.previewSection {
-  width: 25%;
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  font-family: Poppins, sans-serif;
-}
-
-.previewTitle {
-  color: rgb(0, 0, 0);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0.24px;
-  margin-left: 14px;
-}
-
-.previewBox {
-  background-color: rgb(255, 255, 255);
-  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-  width: 100%;
-  height: 543px;
-  margin-top: 14px;
-}
-
-.uploadButton,
-.sendButton {
-  border-radius: 6px;
-  background-color: rgb(138, 138, 138);
-  margin-top: 33px;
-  width: 213px;
-  font-size: 18px;
-  color: rgb(255, 255, 255);
+.title {
+  font-size: 2rem;
   font-weight: 600;
-  letter-spacing: 0.18px;
-  padding: 12px 70px;
-  border: none;
+  color: #212529;
+}
+
+.userName {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #6c757d;
+}
+
+.columnTitle {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #343a40;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e9ecef;
+}
+
+/* === Grid System === */
+.contentGrid {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.previewColumn {
+  flex: 1;
+  min-width: 300px;
+}
+
+.detailsColumn {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* === Card Element === */
+.card {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  border: 1px solid #dee2e6;
+}
+
+/* === PDF Previewer === */
+.previewBox {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  min-height: 500px;
+  height: 65vh; /* Responsive height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Hide internal scrollbars from the box itself */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.pdfContainer {
+  width: 100%;
+  height: 100%;
+}
+
+.noFileText {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* === Form Elements & Grids === */
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroupVertical {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.formLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: #495057;
+  background-color: #fff;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.formInput[readOnly] {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+/* === Checkbox Grid === */
+.checkboxGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.checkboxItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkboxItem label {
+  color: #495057;
+  font-size: 0.95rem;
   cursor: pointer;
 }
 
-.sendButton {
-  background-color: rgb(21, 44, 112);
+.checkboxItem input[type="checkbox"] {
+  width: 1.15em;
+  height: 1.15em;
+  cursor: pointer;
 }
 
-.feedbackSection {
-  width: 75%;
+.checkboxItem input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* === Buttons === */
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  flex-grow: 1; /* Make buttons fill space in the group */
+}
+
+.primaryButton {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background-color: #0b5ed7;
+  border-color: #0a58ca;
+}
+
+.secondaryButton {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.secondaryButton:hover:not(:disabled) {
+  background-color: #5c636a;
+  border-color: #565e64;
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* === Feedback Section === */
+.feedbackContainer {
   display: flex;
   flex-direction: column;
-  align-items: start;
-  font-family: Poppins, sans-serif;
-}
-
-.feedbackTitle {
-  color: rgb(21, 44, 112);
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.feedbackMessage {
-  border-radius: 10px;
-  background-color: rgb(255, 255, 255);
-  margin-top: 22px;
-  width: 950px;
-  max-width: 100%;
-  font-size: 20px;
-  color: var(--text_help_gray, #818e9b);
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  padding: 12px 15px 25px;
-}
-
-.subjectSection {
-  margin-top: 45px;
-}
-
-.subjectLabel {
-  color: var(--text_help_gray, #818e9b);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-}
-
-.subjectValue {
-  color: var(--table_black, #323c47);
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.16px;
-  margin-top: 12px;
-}
-
-.divider {
-  background: var(--text_line, #d3d8dd);
-  width: 100%;
-  height: 1px;
-  margin: 20px 0;
-}
-
-.dropdownSection {
-  align-self: stretch;
-  display: flex;
-  margin-top: 59px;
-  width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.label {
-  border-radius: 0px;
-  border: 0;
-}
-
-.dropdownRow {
-  display: flex;
-  gap: 36px; /* Adds space between dropdowns */
-  margin-bottom: 40px;
-  margin-top: 40px;
-}
-
-.dropdownContainer {
-  flex: 1; /* Ensures equal width for each dropdown */
-}
-
-.dropdownLabel {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.dropdown {
-  width: 100%;
-  padding: 8px;
-  font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.dropdown:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
-}
-
-.dropdownGrid {
-  display: flex;
-  min-height: 67px;
-  align-items: flex-start;
-  gap: 40px 75px;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 991px) {
-  .container {
-    padding-bottom: 100px;
-  }
-
-  .headerIcon {
-    margin-right: 10px;
-  }
-
-  .content {
-    max-width: 100%;
-    padding: 0 20px;
-  }
-
-  .teacherName {
-    margin-left: 10px;
-  }
-
-  .mainSection {
-    flex-direction: column;
-    margin-top: 40px;
-  }
-
-  .previewSection,
-  .feedbackSection {
-    width: 100%;
-    margin-top: 40px;
-  }
-
-  .feedbackMessage {
-    padding-right: 20px;
-  }
-
-  .dropdownSection {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .uploadButton,
-  .sendButton {
-    padding: 12px 20px;
-  }
+  gap: 0.75rem;
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 0.5rem; /* Space for scrollbar */
 }

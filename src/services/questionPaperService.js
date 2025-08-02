@@ -6,16 +6,26 @@ import {
   doc,
   updateDoc,
   Timestamp,
-  getDoc ,
+  getDoc,
   arrayUnion,
-  deleteDoc ,
-  setDoc
+  deleteDoc,
+  setDoc,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../firebase"; // Firebase configuration
 
-
 const submissions = [];
-export const departmentsList = ["CE","CSE","ECE","EEE","ME","MR","AD","CY","Common Subjects"];
+export const departmentsList = [
+  "CE",
+  "CSE",
+  "ECE",
+  "EEE",
+  "ME",
+  "MR",
+  "AD",
+  "CY",
+  "Common Subjects",
+];
 
 export const uploadQuestionPaper = (data) => {
   submissions.push({ ...data, id: submissions.length + 1, status: "Pending" });
@@ -139,7 +149,8 @@ export const getBySubmissionId = async (id) => {
   }
 };
 
-export const getUserDepartment = async (email) => { // Get the current logged-in user
+export const getUserDepartment = async (email) => {
+  // Get the current logged-in user
 
   if (email) {
     try {
@@ -149,7 +160,7 @@ export const getUserDepartment = async (email) => { // Get the current logged-in
 
       if (userDocSnap.exists()) {
         const department = userDocSnap.data().department; // Get the department field
-        console.log('User department:', department);
+        console.log("User department:", department);
         return department; // Return the department value
       } else {
         console.log("No such user document!");
@@ -164,7 +175,8 @@ export const getUserDepartment = async (email) => { // Get the current logged-in
     return null;
   }
 };
-export const getUserScrutinyCommon = async (email) => { // Get the current logged-in user
+export const getUserScrutinyCommon = async (email) => {
+  // Get the current logged-in user
 
   if (email) {
     try {
@@ -174,7 +186,7 @@ export const getUserScrutinyCommon = async (email) => { // Get the current logge
 
       if (userDocSnap.exists()) {
         const scrutiny_common = userDocSnap.data().scrutiny_common; // Get the department field
-        console.log('User scrutiny_common:', scrutiny_common);
+        console.log("User scrutiny_common:", scrutiny_common);
         return scrutiny_common; // Return the department value
       } else {
         console.log("No such user document!");
@@ -189,7 +201,6 @@ export const getUserScrutinyCommon = async (email) => { // Get the current logge
     return null;
   }
 };
-
 
 export const getSubmissionsByTeacher = async (email) => {
   try {
@@ -265,7 +276,10 @@ export const getSubmissionsByDepartment = async (department) => {
 export const getSubmissionsBySharedDepartment = async (userDepartment) => {
   try {
     const collectionRef = collection(db, "uploads");
-    const q = query(collectionRef, where("shared", "array-contains", userDepartment));
+    const q = query(
+      collectionRef,
+      where("shared", "array-contains", userDepartment)
+    );
     const querySnapshot = await getDocs(q);
 
     return querySnapshot.docs.map((doc) => {
@@ -298,34 +312,44 @@ export const getSubmissionsBySharedDepartment = async (userDepartment) => {
   }
 };
 
-
-export const provideFeedback = async (id, feedback) => {
+/**
+ * Rejects a submission, adding a new feedback object and the scrutiny report to the document.
+ * @param {string} id - The document ID of the submission.
+ * @param {string} feedbackText - The feedback message from the user.
+ * @param {Array<Object>} scrutinyReport - The detailed checklist data.
+ */
+export const provideFeedback = async (id, feedbackText, scrutinyReport) => {
   try {
-    if (typeof feedback !== "string") {
-      throw new TypeError("Feedback must be a string.");
-    }
+    const docRef = doc(db, "uploads", id); // Ensure "uploads" is your correct collection name
 
-    const docRef = doc(db, "uploads", id);
-
-    // Use Firestore's arrayUnion to append feedback
+    // Update the document
     await updateDoc(docRef, {
-      feedback: arrayUnion(feedback),
       status: "Rejected",
+      feedback: arrayUnion(feedbackText), // This now works correctly
+      scrutinyReport: scrutinyReport,
     });
-
-    console.log(`Feedback added to submission with ID: ${id}`);
   } catch (error) {
     console.error("Error providing feedback:", error);
+    throw error;
   }
 };
 
-
-
-export const approveSubmission = async (id) => {
+/**
+ * Approves a submission and saves the final scrutiny checklist report.
+ * (This function is correct and needs no changes)
+ * @param {string} id - The document ID of the submission.
+ * @param {Array<Object>} scrutinyReport - The detailed checklist data.
+ */
+export const approveSubmission = async (id, scrutinyReport) => {
   try {
     const docRef = doc(db, "uploads", id);
-    await updateDoc(docRef, { status: "Approved" });
-    console.log(`Submission with ID: ${id} approved`);
+
+    // This is correct because serverTimestamp() is a top-level field.
+    await updateDoc(docRef, {
+      status: "Approved",
+      approvedAt: serverTimestamp(),
+      scrutinyReport: scrutinyReport,
+    });
   } catch (error) {
     console.error("Error approving submission:", error);
     throw error;
@@ -378,23 +402,22 @@ export const getAllUsers = async () => {
   }
 };
 
-export const createUser = async (userId, email, name, department, role) => {  
-  try {  
-    const userDocRef = doc(db, "users", userId);  
-    await setDoc(userDocRef, {  
-      email,  
-      name,  
-      department,  
-      role  
-    });  
-    console.log(`User ${userId} created successfully`);  
-    return true;  
-  } catch (error) {  
-    console.error("Error creating user:", error);  
-    return false;  
-  }  
+export const createUser = async (userId, email, name, department, role) => {
+  try {
+    const userDocRef = doc(db, "users", userId);
+    await setDoc(userDocRef, {
+      email,
+      name,
+      department,
+      role,
+    });
+    console.log(`User ${userId} created successfully`);
+    return true;
+  } catch (error) {
+    console.error("Error creating user:", error);
+    return false;
+  }
 };
-
 
 export const deleteUser = async (userId) => {
   try {

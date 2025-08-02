@@ -1,0 +1,385 @@
+:root {
+  --primary-color: rgb(21, 44, 112);
+  --primary-color-light: rgba(21, 44, 112, 0.1);
+  --primary-color-hover: rgb(15, 32, 82);
+  --approve-color: #28a745;
+  --approve-color-hover: #218838;
+  --reject-color: #dc3545;
+  --reject-color-hover: #c82333;
+  --neutral-bg: rgb(245, 246, 248);
+  --card-bg: #ffffff;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --font-family: "Poppins", sans-serif;
+}
+
+/* --- General Layout & Structure --- */
+.editorContainer {
+  background-color: var(--neutral-bg);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0 80px;
+  min-height: 100vh;
+  font-family: var(--font-family);
+}
+
+.contentWrapper {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+.pageTitle {
+  color: var(--text-secondary);
+  letter-spacing: 0.36px;
+  font-weight: 600;
+  font-size: 32px;
+  margin-bottom: 24px;
+}
+
+.mainContent {
+  margin-top: 20px;
+}
+
+.contentGrid {
+  gap: 24px; /* ADJUSTED: Reduced space between columns */
+  display: flex;
+  align-items: flex-start;
+}
+
+/* --- Reusable Card Component Style --- */
+.card {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* ADJUSTED: Reduced internal space in cards */
+}
+
+.cardTitle {
+  color: var(--primary-color);
+  font-size: 22px;
+  font-weight: 600;
+  padding-bottom: 12px;
+  margin: 0 0 4px 0; /* ADJUSTED: Reduced bottom margin */
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* --- Left Column: Preview --- */
+.previewColumn {
+  display: flex;
+  flex-direction: column;
+  width: 45%;
+  position: sticky;
+  top: 20px;
+}
+
+.previewCard {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--border-color);
+  padding: 24px;
+}
+
+.previewBox {
+  background-color: #f8f9fa;
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+/* --- Right Column: Details --- */
+.detailsColumn {
+  display: flex;
+  flex-direction: column;
+  width: 55%;
+  gap: 20px; /* ADJUSTED: Reduced space between cards */
+}
+
+/* --- Form Element Styling --- */
+.formGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* ADJUSTED: Reduced space in form groups */
+  width: 100%;
+}
+
+.formLabel {
+  color: var(--text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  flex-shrink: 0;
+  width: 120px;
+}
+
+.formInput {
+  flex-grow: 1;
+  padding: 10px 14px; /* ADJUSTED: Slightly less padding */
+  font-size: 16px;
+  font-family: var(--font-family);
+  color: var(--text-primary);
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formInput:not([readOnly]) {
+  background-color: var(--card-bg);
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-color-light);
+}
+
+textarea.formInput {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* --- ✅ COMPACT CHECKLIST ✅ --- */
+/* The container uses flex-direction: column to stack items vertically */
+.checklistContainer {
+  display: flex;
+  flex-direction: column; /* This ensures items are one below the other */
+  gap: 2px; /* ADJUSTED: Minimal gap for a tight list */
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+/* Custom Scrollbar for Webkit browsers */
+.checklistContainer::-webkit-scrollbar {
+  width: 6px;
+}
+.checklistContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.checklistContainer::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+.checklistContainer::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+.checklistItem {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* ADJUSTED: Reduced space between checkbox and text */
+  padding: 10px 12px; /* ADJUSTED: Reduced padding for a tighter feel */
+  border-radius: 8px;
+  transition: background-color 0.2s ease-in-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.checklistItem:hover {
+  background-color: var(--primary-color-light);
+  border-color: #d8e0f7;
+}
+
+.checklistCheckbox {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #fff;
+  margin: 0;
+  color: var(--approve-color);
+  width: 1.25em;
+  height: 1.25em;
+  border: 0.15em solid var(--border-color);
+  border-radius: 0.25em;
+  display: grid;
+  place-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.checklistCheckbox::before {
+  content: "";
+  width: 0.75em;
+  height: 0.75em;
+  background-color: white;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+}
+
+.checklistCheckbox:checked {
+  background-color: var(--approve-color);
+  border-color: var(--approve-color);
+}
+
+.checklistCheckbox:checked::before {
+  transform: scale(1);
+}
+.checklistCheckbox:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.checklistText {
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  transition: color 0.3s, text-decoration-color 0.3s;
+}
+
+.checklistCheckbox:checked + .checklistText {
+  color: var(--text-secondary);
+  text-decoration: line-through;
+  text-decoration-color: #ffb1b1;
+}
+
+/* --- Feedback Section --- */
+.feedbackList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 10px;
+  background-color: var(--neutral-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.noFeedbackText {
+  color: var(--text-secondary);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* --- Action Buttons --- */
+.finalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px; /* ADJUSTED: Reduced space between final buttons */
+  width: 100%;
+  padding-top: 16px; /* ADJUSTED: Less top padding */
+  border-top: 1px solid var(--border-color);
+  margin-top: 10px;
+}
+
+.actionButton {
+  font-family: var(--font-family);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 28px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.approveButton {
+  background-color: var(--approve-color);
+  color: white;
+}
+.approveButton:hover {
+  background-color: var(--approve-color-hover);
+}
+
+.rejectButton {
+  background-color: var(--reject-color);
+  color: white;
+}
+.rejectButton:hover {
+  background-color: var(--reject-color-hover);
+}
+
+.printButton {
+  background-color: var(--text-secondary);
+  color: white;
+  margin-top: 20px;
+  width: 100%;
+}
+.printButton:hover {
+  background-color: #5a6268;
+}
+
+.generateReportButton {
+  background-color: var(--card-bg);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  margin-top: 16px;
+}
+.generateReportButton:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 1200px) {
+  .contentGrid {
+    flex-direction: column;
+  }
+  .previewColumn,
+  .detailsColumn {
+    width: 100%;
+    position: static;
+  }
+  .previewBox {
+    height: 60vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .contentWrapper {
+    padding: 0 20px;
+  }
+  .pageTitle {
+    font-size: 28px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .formGroup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .formLabel {
+    width: auto;
+  }
+  .formInput {
+    width: 100%;
+  }
+  .finalActions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  .actionButton {
+    width: 100%;
+  }
+}

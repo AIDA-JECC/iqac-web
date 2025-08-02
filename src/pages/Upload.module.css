@@ -51,9 +51,8 @@
 
 .previewSection {
   display: flex;
-  flex-grow: 1;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: column; /* Stacks children vertically: Title, Box, Button */
+  height: 100%; /* Ensures this section fills the entire column */
   font-family: Poppins, sans-serif;
 }
 
@@ -63,17 +62,21 @@
   font-weight: 400;
   letter-spacing: 0.24px;
   margin-left: 14px;
+  flex-shrink: 0; /* Prevents the title from shrinking */
 }
 
+/* REVISED: The preview box is now flexible */
 .previewBox {
   background-color: #fff;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-  align-self: stretch;
-  display: flex;
-  flex-direction: column;
+  margin-top: 12px; /* Add some space below the title */
   width: 100%;
-  height: 80vh;
-  overflow: auto; /* Ensure scroll works */
+  flex-grow: 1; /* CRITICAL: This makes the box grow to fill available space */
+  min-height: 300px; /* Ensures the box doesn't become too small */
+  overflow: auto; /* This will add a scrollbar INSIDE the box if the PDF is long */
+  display: flex; /* Helps center the 'No file selected' message */
+  justify-content: center;
+  align-items: center;
 }
 
 .pdfContainer {
@@ -100,22 +103,21 @@
   width: 100% !important;
 }
 
-
 .uploadButton {
   border-radius: 6px;
   background-color: #8a8a8a;
-  margin-top: 33px;
+  margin-top: 20px; /* Space between preview box and button */
   width: 213px;
   max-width: 100%;
   font-size: 18px;
   color: #fff;
   font-weight: 600;
   letter-spacing: 0.18px;
-  padding: 12px 70px;
+  padding: 12px 20px; /* Adjusted padding */
   border: none;
   cursor: pointer;
+  flex-shrink: 0; /* Prevents the button from shrinking */
 }
-
 .detailsColumn {
   display: flex;
   flex-direction: column;
@@ -126,9 +128,11 @@
 
 .detailsSection {
   display: flex;
-  margin-top: 34px;
   flex-direction: column;
-  align-items: flex-start;
+  /* Use gap for consistent vertical spacing */
+  gap: 24px;
+  width: 100%;
+  margin-top: 34px;
   font-family: Poppins, sans-serif;
 }
 
@@ -137,263 +141,175 @@
   font-size: 30px;
   font-weight: 600;
   letter-spacing: 0.3px;
+  margin-bottom: 10px; /* Add some space after the main title */
 }
 
-.subjectContainer {
-  margin-top: 16px;
-}
-
-.subjectTitle {
-  color: var(--text_help_gray, #818e9b);
-  font-size: 20px;
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  margin-top: 26px;
-}
-
-.subjectName {
-  color: var(--table_black, #323c47);
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.16px;
-  margin-top: 16px;
-}
-
-.subjectInput {
-  font-weight: 600;
-  letter-spacing: 0.7px;
-  background-color: rgb(245, 246, 248);
-  color: #334d6e;
-  border-radius: 0px;
-  border: 0px;
-  outline: none; /* Removes the default focus outline */
-  border: none; /* Ensures no border appears */
-}
-
-.divider {
-  background: var(--text_line, #d3d8dd);
-  width: 100%;
-  height: 1px;
-}
-
-.dropdownSection {
-  align-self: stretch;
+/* NEW: A wrapper for label-input pairs for alignment */
+.formGroup {
   display: flex;
-  margin-top: 59px;
+  align-items: center; /* Vertically aligns label and input */
+  gap: 16px; /* Space between label and input */
   width: 100%;
-  flex-direction: column;
-  align-items: flex-start;
 }
 
-.label {
-  border-radius: 0px;
-  border: 0;
+/* NEW: Unified style for all form labels */
+.formLabel {
+  color: #323c47;
+  font-size: 16px;
+  font-weight: 500;
+  flex-shrink: 0; /* Prevents the label from shrinking */
+  width: 120px; /* Give labels a fixed width for perfect alignment */
 }
 
+/* REFACTORED & ELEGANT: The new input style */
+.formInput {
+  flex-grow: 1; /* Allows input to take up remaining space */
+  padding: 10px 12px;
+  font-size: 16px;
+  font-family: Poppins, sans-serif;
+  color: #334d6e;
+  background-color: #ffffff;
+  border: 1px solid #d3d8dd; /* Subtle border */
+  border-radius: 6px; /* Soft rounded corners */
+  transition: border-color 0.2s, box-shadow 0.2s; /* Smooth transition for focus */
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: rgb(21, 44, 112); /* Highlight color on focus */
+  box-shadow: 0 0 0 3px rgba(21, 44, 112, 0.1); /* Subtle glow on focus */
+}
+
+/* Make read-only fields look distinct */
+.formInput[readOnly] {
+  background-color: #f1f3f5;
+  cursor: not-allowed;
+}
+
+/* Remove old input and divider styles */
+.subjectContainer,
+.subjectInput,
+.subjectTitle,
+.divider {
+  /* These are no longer needed */
+  display: none;
+}
+
+/* --- Dropdown Styling --- */
 .dropdownRow {
   display: flex;
-  gap: 36px; /* Adds space between dropdowns */
-  margin-bottom: 40px;
-  margin-top: 40px;
+  gap: 20px;
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .dropdownContainer {
-  flex: 1; /* Ensures equal width for each dropdown */
+  flex: 1;
 }
 
 .dropdownLabel {
   display: block;
-  font-weight: bold;
-  margin-bottom: 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #323c47;
+  margin-bottom: 8px;
 }
 
+/* Apply the same elegant style to dropdowns */
 .dropdown {
   width: 100%;
-  padding: 8px;
+  padding: 10px 12px;
   font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  font-family: Poppins, sans-serif;
+  color: #334d6e;
+  background-color: #ffffff;
+  border: 1px solid #d3d8dd;
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .dropdown:focus {
   outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+  border-color: rgb(21, 44, 112);
+  box-shadow: 0 0 0 3px rgba(21, 44, 112, 0.1);
 }
 
-.dropdownGrid {
-  display: flex;
-  min-height: 67px;
-  align-items: flex-start;
-  gap: 40px 75px;
-  justify-content: flex-start;
-  flex-wrap: wrap;
-}
-
-.descriptionBox {
-  background-color: #fff;
-  /* /box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25); */
-  margin-top: 14px;
-  width: 1068px;
-  max-width: 100%;
-  font-size: 16px;
-  color: #000;
-  font-weight: 500;
-  letter-spacing: 0.16px;
-  padding: 24px 39px 89px;
-  border-radius: 0px;
-  border: 0;
-}
-
-.sendButton {
-  border-radius: 6px;
-  background-color: rgb(21, 44, 112);
-  margin-top: 59px;
-  margin-left: 50px;
-  width: 302px;
-  max-width: 100%;
-  font-size: 18px;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.18px;
-  padding: 12px 70px;
-  border: none;
-  cursor: pointer;
-}
-
-.printButton {
-  border-radius: 6px;
-  background-color: rgb(21, 44, 112);
-  width: 302px;
-  height: 40px;
-  margin-top: 10px;
-  max-width: 100%;
-  color: #fff;
-  font-weight: 600;
-  letter-spacing: 0.18px;
-  border: none;
-  cursor: pointer;
-}
-
-.feedbackSection {
-  margin-top: 20px;
-  width: 75%;
-  display: flex;
-  flex-direction: column;
-  align-items: start;
-  font-family: Poppins, sans-serif;
-}
-
-.feedbackTitle {
-  color: rgb(21, 44, 112);
-  font-size: 30px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.feedbackMessage {
-  border-radius: 10px;
-  background-color: rgb(255, 255, 255);
-  margin-top: 22px;
-  width: 950px;
-  max-width: 100%;
-  font-size: 20px;
-  color: var(--text_help_gray, #818e9b);
-  font-weight: 500;
-  letter-spacing: 0.2px;
-  padding: 12px 15px 25px;
-}
-
+/* --- Shared Departments Tag Styling --- */
 .sharedDepartmentsContainer {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 10px;
+  flex-grow: 1;
+  background-color: #fff;
+  border: 1px solid #d3d8dd;
+  border-radius: 6px;
+  padding: 8px;
+  min-height: 42px; /* Match input height */
+}
+
+.noSelectionText {
+  color: #818e9b;
+  align-self: center;
+  font-size: 14px;
+  padding-left: 4px;
 }
 
 .sharedDepartmentTag {
   display: flex;
   align-items: center;
-  background-color: #f0f0f0;
-  padding: 5px 10px;
+  background-color: rgb(21, 44, 112);
+  color: white;
+  padding: 4px 10px;
   border-radius: 15px;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .removeButton {
   margin-left: 8px;
   background: none;
   border: none;
-  color: red;
+  color: #ffdddd;
   font-weight: bold;
   cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.2s;
 }
 
+.removeButton:hover {
+  color: #ffffff;
+}
 
-@media (max-width: 991px) {
-  .editorContainer {
-    padding-bottom: 100px;
-  }
+/* NEW: A container to reliably align the button to the right */
+.formActions {
+  display: flex;
+  justify-content: flex-end; /* Pushes button to the right */
+  width: 100%;
+  margin-top: 20px;
+}
 
-  .headerIcon {
-    margin-right: 10px;
-  }
+/* REFACTORED: Send button style */
+.sendButton {
+  border-radius: 6px;
+  background-color: rgb(21, 44, 112);
+  /* Remove fixed margins */
+  font-size: 18px;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.18px;
+  padding: 12px 40px; /* Adjusted padding */
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
 
-  .contentWrapper {
-    max-width: 100%;
-    padding: 0 20px;
-  }
+.sendButton:hover:not(:disabled) {
+  background-color: #213c96; /* A slightly lighter shade on hover */
+}
 
-  .userName {
-    margin-left: 10px;
-  }
-
-  .mainContent {
-    max-width: 100%;
-    margin-top: 40px;
-  }
-
-  .contentGrid {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-  }
-
-  .previewColumn {
-    width: 100%;
-  }
-
-  .previewSection {
-    margin-top: 35px;
-  }
-
-  .previewTitle {
-    margin-left: 10px;
-  }
-
-  .uploadButton {
-    padding: 0 20px;
-  }
-
-  .detailsColumn {
-    width: 100%;
-  }
-
-  .detailsSection {
-    max-width: 100%;
-    margin-top: 40px;
-  }
-
-  .dropdownSection {
-    max-width: 100%;
-    margin-top: 40px;
-  }
-
-  .descriptionBox {
-    padding: 0 20px 110px;
-  }
-
-  .sendButton {
-    margin-top: 40px;
-    padding: 0 20px;
-  }
+.sendButton:disabled {
+  background-color: #a0a0a0;
+  cursor: wait;
 }
