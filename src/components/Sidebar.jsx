@@ -96,7 +96,7 @@ export const Sidebar = ({ submissions }) => {
           name={extractName(auth.currentUser.email)}
           email={auth.currentUser.email}
           department={dept}
-          avatar="https://cdn.builder.io/api/v1/image/assets/TEMP/ecb316b8df04291c82ea9e0c1fcd35729f0087a0d2f8dd891f88c86656d6b87f?placeholderIfAbsent=true&apiKey=2fc17400dcd74914b50bcc9d036de5cf"
+          avatar={auth.currentUser.photoURL}
         />
         <nav className={styles.sidebarNav}>
           {(isScrutiny) && (
