@@ -4,9 +4,9 @@ import { auth } from "../firebase"; // Firebase configuration
 import { useSendRejectionEmail } from "../services/emailService";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
-import "@react-pdf-viewer/core/lib/styles/index.css"; // Core styles
-import "@react-pdf-viewer/default-layout/lib/styles/index.css"; // Default layout styles
+import { Worker, Viewer } from "@react-pdf-viewer/core";
+import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import {
   getBySubmissionId,
   approveSubmission,
@@ -14,9 +14,10 @@ import {
 } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
 
-// PDF generation libraries
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+// Import pdf-lib and the PDF template
+// Add PDFName and PDFNumber to your import line
+import { PDFDocument, StandardFonts, PDFName, PDFNumber } from "pdf-lib";
+import formUrl from "./QP_Scrutiny Form_New _Fields.pdf";
 
 const extractName = (email) => {
   if (!email) return "Scrutinizer";
@@ -46,6 +47,9 @@ const scrutinyChecklistItems = [
 export const ScrutinyApproval = () => {
   const { sendRejectionEmail } = useSendRejectionEmail();
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  // --- Component State ---
   const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [facultyEmail, setFacultyEmail] = useState("");
   const [teacherMail, setTeacherMail] = useState("");
@@ -56,19 +60,16 @@ export const ScrutinyApproval = () => {
   const [semester, setSemester] = useState("");
   const [year, setYear] = useState("");
   const [fileURL, setFileURL] = useState(null);
-  const navigate = useNavigate();
 
   const [checkedState, setCheckedState] = useState(
-    new Array(scrutinyChecklistItems.length).fill(false)
+    scrutinyChecklistItems.map(() => ({ status: null }))
   );
 
-  // ✅ MODIFIED: This useEffect hook now fetches and applies the saved checklist state.
   useEffect(() => {
     const fetchSubmissionData = async () => {
       try {
         const result = await getBySubmissionId(id);
         if (result) {
-          // --- Set standard submission details ---
           setFacultyEmail(result.teacherName || "");
           setTeacherMail(result.uploadedBy || "");
           setSubjectName(result.courseName || "");
@@ -81,22 +82,20 @@ export const ScrutinyApproval = () => {
             Array.isArray(result.feedback) ? result.feedback : []
           );
 
-          // --- ⬇️ NEW: Check for and apply the saved scrutiny report ⬇️ ---
           if (result.scrutinyReport && Array.isArray(result.scrutinyReport)) {
-            // Create a boolean array based on the saved report from Firebase
             const initialCheckedState = scrutinyChecklistItems.map(
               (itemText) => {
                 const savedItem = result.scrutinyReport.find(
                   (reportItem) => reportItem.requirement === itemText
                 );
-                // If the item was found in the report, set its state to true if status is "Yes", otherwise false.
-                // If it wasn't found (e.g., new checklist item), default to false.
-                return savedItem ? savedItem.status === "Yes" : false;
+                return {
+                  status:
+                    savedItem && savedItem.status === "Yes" ? "Yes" : null,
+                };
               }
             );
             setCheckedState(initialCheckedState);
           }
-          // --- ⬆️ End of new logic ⬆️ ---
         }
       } catch (error) {
         console.error("Error fetching submission data:", error);
@@ -107,60 +106,109 @@ export const ScrutinyApproval = () => {
   }, [id]);
 
   const handleCheckboxChange = (position) => {
-    const updatedCheckedState = checkedState.map((item, index) =>
-      index === position ? !item : item
-    );
+    const updatedCheckedState = checkedState.map((item, index) => {
+      if (index === position) {
+        const newStatus = item.status === "Yes" ? null : "Yes";
+        return { ...item, status: newStatus };
+      }
+      return item;
+    });
     setCheckedState(updatedCheckedState);
   };
 
-  const handleGenerateReport = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("Scrutiny Verification Report", 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Subject: ${subjectName} (${subjectCode})`, 14, 32);
-    doc.text(`Faculty: ${facultyEmail}`, 14, 38);
-    doc.text(
-      `Department: ${department} | Year: ${year} | Semester: ${semester}`,
-      14,
-      44
-    );
+  const handleGenerateReport = async () => {
+    try {
+      // 1. Fetch and load the PDF template
+      const formPdfBytes = await fetch(formUrl).then((res) =>
+        res.arrayBuffer()
+      );
+      const pdfDoc = await PDFDocument.load(formPdfBytes);
+      const form = pdfDoc.getForm();
+      const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+      const fontOptions = { font: timesRomanFont };
 
-    const tableColumn = ["#", "Requirement", "Status"];
-    const tableRows = scrutinyChecklistItems.map((item, index) => [
-      index + 1,
-      item,
-      checkedState[index] ? "Verified" : "Pending",
-    ]);
+      // 2. Fill top-level text fields
+      form
+        .getField("Course Code & Title")
+        .setText(`${subjectCode} - ${subjectName}`, fontOptions);
+      form.getField("Name of the QP Setter").setText(facultyEmail, fontOptions);
+      form
+        .getField("Semester & Branch")
+        .setText(`${semester} / ${department}`, fontOptions);
+      form
+        .getField("Date of Scrutiny")
+        .setText(new Date().toLocaleDateString("en-IN"), fontOptions);
+      form
+        .getField("Name of the QP Scrutinizer")
+        .setText(extractName(auth.currentUser?.email), fontOptions);
 
-    autoTable(doc, {
-      head: [tableColumn],
-      body: tableRows,
-      startY: 55,
-      headStyles: { fillColor: [21, 44, 112] },
-      columnStyles: {
-        0: { cellWidth: 10, halign: "center" },
-        2: { cellWidth: 25, halign: "center" },
-      },
-    });
+      // 3. Fill the checklist
+      checkedState.forEach((item, index) => {
+        const serial = index + 1;
+        if (item.status === "Yes") {
+          form.getField(`SL-${serial}A-YES`).check();
+        } else {
+          form.getField(`SL-${serial}A-NO`).check();
+        }
+      });
 
-    const date = new Date().toLocaleDateString("en-IN");
-    doc.setFontSize(10);
-    doc.text(
-      `Report generated by: ${extractName(auth.currentUser?.email)} on ${date}`,
-      14,
-      doc.lastAutoTable.finalY + 10
-    );
-    doc.save(`Scrutiny-Report-${subjectCode}-${Date.now()}.pdf`);
-    toast.success("Scrutiny report downloaded!");
+      // 4. Determine final recommendation for SET A
+      const allItemsApproved = checkedState.every(
+        (item) => item.status === "Yes"
+      );
+      if (allItemsApproved) {
+        form
+          .getField("SETA: Approved without Correction")
+          .setText("Yes", fontOptions);
+        form.getField("SETA: Resubmission Required").setText("No", fontOptions);
+      } else {
+        form
+          .getField("SETA: Approved without Correction")
+          .setText("No", fontOptions);
+        form
+          .getField("SETA: Resubmission Required")
+          .setText("Yes", fontOptions);
+      }
+
+      // 5. ✅ Manually set the "read-only" flag for every field
+      const fields = form.getFields();
+      fields.forEach((field) => {
+        // Get the underlying dictionary for the field
+        const fieldDict = field.acroField.dict;
+
+        // Get the current flags, default to 0 if not present
+        let flags = 0;
+        const ff = fieldDict.get(PDFName.of("Ff"));
+        if (ff instanceof PDFNumber) {
+          flags = ff.asNumber();
+        }
+
+        // Set the 1st bit (ReadOnly) using a bitwise OR
+        fieldDict.set(PDFName.of("Ff"), PDFNumber.of(flags | 1));
+      });
+
+      // 6. Save the PDF. The fields will be visible but locked.
+      const filledPdfBytes = await pdfDoc.save();
+      const blob = new Blob([filledPdfBytes], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = `Scrutiny-Form-Final-${subjectCode}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("Scrutiny form filled and downloaded!");
+    } catch (error) {
+      console.error("Failed to generate and fill PDF:", error);
+      toast.error("Could not generate report. Check console for details.");
+    }
   };
 
   const handleApprove = async () => {
     const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
       requirement: item,
-      status: checkedState[index] ? "Yes" : "No",
+      status: checkedState[index].status === "Yes" ? "Yes" : "No",
     }));
-
     try {
       await approveSubmission(id, scrutinyReport);
       toast.success("Submission approved successfully!");
@@ -178,9 +226,8 @@ export const ScrutinyApproval = () => {
     }
     const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
       requirement: item,
-      status: checkedState[index] ? "Yes" : "No",
+      status: checkedState[index].status === "Yes" ? "Yes" : "No",
     }));
-
     try {
       await provideFeedback(id, newFeedback, scrutinyReport);
       // Log the faculty email before sending
@@ -302,7 +349,7 @@ export const ScrutinyApproval = () => {
               <div className={styles.card}>
                 <h2 className={styles.cardTitle}>Verification Checklist</h2>
                 <div className={styles.checklistContainer}>
-                  {scrutinyChecklistItems.map((item, index) => (
+                  {checkedState.map((item, index) => (
                     <label
                       className={styles.checklistItem}
                       key={index}
@@ -311,11 +358,13 @@ export const ScrutinyApproval = () => {
                       <input
                         type="checkbox"
                         id={`checkbox-${index}`}
-                        checked={checkedState[index]}
+                        checked={item.status === "Yes"}
                         onChange={() => handleCheckboxChange(index)}
                         className={styles.checklistCheckbox}
                       />
-                      <span className={styles.checklistText}>{item}</span>
+                      <span className={styles.checklistText}>
+                        {scrutinyChecklistItems[index]}
+                      </span>
                     </label>
                   ))}
                 </div>
