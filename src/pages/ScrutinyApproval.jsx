@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "./ScrutinyApproval.module.css";
 import { auth } from "../firebase"; // Firebase configuration
+import { useSendRejectionEmail } from "../services/emailService";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Worker, Viewer } from "@react-pdf-viewer/core"; // Import PDF Viewer
@@ -43,9 +44,11 @@ const scrutinyChecklistItems = [
 ];
 
 export const ScrutinyApproval = () => {
+  const { sendRejectionEmail } = useSendRejectionEmail();
   const { id } = useParams();
   const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [facultyEmail, setFacultyEmail] = useState("");
+  const [teacherMail, setTeacherMail] = useState("");
   const [newFeedback, setNewFeedback] = useState("");
   const [subjectName, setSubjectName] = useState("");
   const [subjectCode, setSubjectCode] = useState("");
@@ -67,6 +70,7 @@ export const ScrutinyApproval = () => {
         if (result) {
           // --- Set standard submission details ---
           setFacultyEmail(result.teacherName || "");
+          setTeacherMail(result.uploadedBy || "");
           setSubjectName(result.courseName || "");
           setSubjectCode(result.subjectCode || "");
           setDepartment(result.dept || "");
@@ -179,7 +183,21 @@ export const ScrutinyApproval = () => {
 
     try {
       await provideFeedback(id, newFeedback, scrutinyReport);
-      toast.info("Submission rejected with feedback.");
+      // Log the faculty email before sending
+      console.log("Sending rejection email to:", teacherMail);
+      // Send rejection email to faculty using the hook
+      try {
+        await sendRejectionEmail({
+          teacherMail,
+          subject: `Question Paper Rejected: ${subjectName} (${subjectCode})`,
+          facultyName: facultyEmail,
+          feedback: newFeedback,
+        });
+        toast.info("Submission rejected and email sent to faculty.");
+      } catch (emailError) {
+        toast.info("Submission rejected, but failed to send email.");
+        console.error("Email error:", emailError);
+      }
       navigate("/scrutiny");
     } catch (error) {
       toast.error("Failed to reject submission.");
