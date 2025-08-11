@@ -13,12 +13,10 @@ import {
   provideFeedback,
 } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
-
-// Import pdf-lib and the PDF template
-// Add PDFName and PDFNumber to your import line
-import { PDFDocument, StandardFonts, PDFName, PDFNumber } from "pdf-lib";
+import { PDFDocument, StandardFonts, PDFTextField, rgb } from "pdf-lib";
 import formUrl from "./QP_Scrutiny Form_New _Fields.pdf";
 
+// --- Helper Functions & Constants ---
 const extractName = (email) => {
   if (!email) return "Scrutinizer";
   const namePart = email.split("@")[0];
@@ -44,12 +42,52 @@ const scrutinyChecklistItems = [
   "Choice of questions is appropriately provided (if applicable).",
 ];
 
+// --- Reusable Checklist Component ---
+const ScrutinyChecklist = ({ title, items, checkedState, onStateChange }) => (
+  <div className={styles.card}>
+        <h2 className={styles.cardTitle}>{title}</h2>   {" "}
+    <div className={styles.checklistContainer}>
+           {" "}
+      {items.map((itemText, index) => (
+        <div className={styles.checklistItem} key={index}>
+                   {" "}
+          <span className={styles.checklistText}>
+                        {index + 1}. {itemText}         {" "}
+          </span>
+                   {" "}
+          <div className={styles.radioGroup}>
+                       {" "}
+            {["Yes", "No", "N/A"].map((option) => (
+              <label key={option} className={styles.radioLabel}>
+                               {" "}
+                <input
+                  type="radio"
+                  name={`checklist-${title}-${index}`}
+                  value={option}
+                  checked={checkedState[index].status === option}
+                  onChange={() => onStateChange(index, option)}
+                  className={styles.checklistRadio}
+                />
+                                {option}             {" "}
+              </label>
+            ))}
+                     {" "}
+          </div>
+                 {" "}
+        </div>
+      ))}
+         {" "}
+    </div>
+     {" "}
+  </div>
+);
+
 export const ScrutinyApproval = () => {
   const { sendRejectionEmail } = useSendRejectionEmail();
   const { id } = useParams();
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // --- Component State ---
 
-  // --- Component State ---
+  const [activeTab, setActiveTab] = useState("A");
   const [feedbackMessages, setFeedbackMessages] = useState([]);
   const [facultyEmail, setFacultyEmail] = useState("");
   const [teacherMail, setTeacherMail] = useState("");
@@ -59,11 +97,14 @@ export const ScrutinyApproval = () => {
   const [department, setDepartment] = useState("");
   const [semester, setSemester] = useState("");
   const [year, setYear] = useState("");
-  const [fileURL, setFileURL] = useState(null);
+  const [fileURLA, setFileURLA] = useState(null);
+  const [fileURLB, setFileURLB] = useState(null);
 
-  const [checkedState, setCheckedState] = useState(
-    scrutinyChecklistItems.map(() => ({ status: null }))
-  );
+  const defaultChecklistState = scrutinyChecklistItems.map(() => ({
+    status: "No",
+  }));
+  const [checkedStateA, setCheckedStateA] = useState(defaultChecklistState);
+  const [checkedStateB, setCheckedStateB] = useState(defaultChecklistState);
 
   useEffect(() => {
     const fetchSubmissionData = async () => {
@@ -77,24 +118,28 @@ export const ScrutinyApproval = () => {
           setDepartment(result.dept || "");
           setSemester(result.semester || "");
           setYear(result.year || "");
-          setFileURL(result.fileURL || null);
+          setFileURLA(result.fileURLA || null);
+          setFileURLB(result.fileURLB || null);
           setFeedbackMessages(
             Array.isArray(result.feedback) ? result.feedback : []
           );
-
-          if (result.scrutinyReport && Array.isArray(result.scrutinyReport)) {
-            const initialCheckedState = scrutinyChecklistItems.map(
-              (itemText) => {
-                const savedItem = result.scrutinyReport.find(
-                  (reportItem) => reportItem.requirement === itemText
-                );
-                return {
-                  status:
-                    savedItem && savedItem.status === "Yes" ? "Yes" : null,
-                };
-              }
+          const populateChecklist = (reportData) =>
+            scrutinyChecklistItems.map((itemText) => {
+              const savedItem = reportData?.find(
+                (reportItem) => reportItem.requirement === itemText
+              );
+              return { status: savedItem?.status || "No" };
+            });
+          // ✅ FIX: Access the nested scrutinyReport object
+          if (result.scrutinyReport && result.scrutinyReport.scrutinyReportA) {
+            setCheckedStateA(
+              populateChecklist(result.scrutinyReport.scrutinyReportA)
             );
-            setCheckedState(initialCheckedState);
+          }
+          if (result.scrutinyReport && result.scrutinyReport.scrutinyReportB) {
+            setCheckedStateB(
+              populateChecklist(result.scrutinyReport.scrutinyReportB)
+            );
           }
         }
       } catch (error) {
@@ -105,29 +150,28 @@ export const ScrutinyApproval = () => {
     fetchSubmissionData();
   }, [id]);
 
-  const handleCheckboxChange = (position) => {
-    const updatedCheckedState = checkedState.map((item, index) => {
-      if (index === position) {
-        const newStatus = item.status === "Yes" ? null : "Yes";
-        return { ...item, status: newStatus };
-      }
-      return item;
-    });
-    setCheckedState(updatedCheckedState);
+  const handleRadioChange = (checklistType, position, value) => {
+    const updater = (prev) =>
+      prev.map((item, index) =>
+        index === position ? { ...item, status: value } : item
+      );
+    if (checklistType === "A") setCheckedStateA(updater);
+    else setCheckedStateB(updater);
   };
 
   const handleGenerateReport = async () => {
     try {
-      // 1. Fetch and load the PDF template
       const formPdfBytes = await fetch(formUrl).then((res) =>
         res.arrayBuffer()
       );
       const pdfDoc = await PDFDocument.load(formPdfBytes);
       const form = pdfDoc.getForm();
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
+
       const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
       const fontOptions = { font: timesRomanFont };
 
-      // 2. Fill top-level text fields
       form
         .getField("Course Code & Title")
         .setText(`${subjectCode} - ${subjectName}`, fontOptions);
@@ -142,75 +186,97 @@ export const ScrutinyApproval = () => {
         .getField("Name of the QP Scrutinizer")
         .setText(extractName(auth.currentUser?.email), fontOptions);
 
-      // 3. Fill the checklist
-      checkedState.forEach((item, index) => {
-        const serial = index + 1;
-        if (item.status === "Yes") {
-          form.getField(`SL-${serial}A-YES`).check();
+      const processChecklist = (checklistState, setIdentifier) => {
+        checklistState.forEach((item, index) => {
+          const serial = index + 1;
+          const yesField = form.getField(`SL-${serial}${setIdentifier}-YES`);
+          const noField = form.getField(`SL-${serial}${setIdentifier}-NO`);
+
+          if (item.status === "Yes") {
+            yesField.check();
+          } else if (item.status === "No") {
+            noField.check();
+          } else if (item.status === "N/A") {
+            const noFieldWidget = noField.acroField.getWidgets()[0];
+            const { x, y, width, height } = noFieldWidget.getRectangle();
+            const padding = 3;
+
+            firstPage.drawLine({
+              start: { x: x + padding, y: y + padding },
+              end: { x: x + width - padding, y: y + height - padding },
+              thickness: 1.5,
+              color: rgb(0.2, 0.2, 0.2),
+            });
+            firstPage.drawLine({
+              start: { x: x + padding, y: y + height - padding },
+              end: { x: x + width - padding, y: y + padding },
+              thickness: 1.5,
+              color: rgb(0.2, 0.2, 0.2),
+            });
+          }
+        });
+
+        const allItemsApproved = checklistState.every(
+          (item) => item.status === "Yes" || item.status === "N/A"
+        );
+        const approvedField = form.getField(
+          `SET${setIdentifier}: Approved without Correction`
+        );
+        const resubmitField = form.getField(
+          `SET${setIdentifier}: Resubmission Required`
+        );
+
+        if (allItemsApproved) {
+          approvedField.setText("Yes", fontOptions);
+          resubmitField.setText("No", fontOptions);
         } else {
-          form.getField(`SL-${serial}A-NO`).check();
+          approvedField.setText("No", fontOptions);
+          resubmitField.setText("Yes", fontOptions);
+        }
+      };
+
+      processChecklist(checkedStateA, "A");
+      processChecklist(checkedStateB, "B");
+
+      form.getFields().forEach((field) => {
+        if (field instanceof PDFTextField) {
+          field.updateAppearances(timesRomanFont);
+        } else {
+          field.updateAppearances();
         }
       });
 
-      // 4. Determine final recommendation for SET A
-      const allItemsApproved = checkedState.every(
-        (item) => item.status === "Yes"
-      );
-      if (allItemsApproved) {
-        form
-          .getField("SETA: Approved without Correction")
-          .setText("Yes", fontOptions);
-        form.getField("SETA: Resubmission Required").setText("No", fontOptions);
-      } else {
-        form
-          .getField("SETA: Approved without Correction")
-          .setText("No", fontOptions);
-        form
-          .getField("SETA: Resubmission Required")
-          .setText("Yes", fontOptions);
-      }
+      form.flatten();
 
-      // 5. ✅ Manually set the "read-only" flag for every field
-      const fields = form.getFields();
-      fields.forEach((field) => {
-        // Get the underlying dictionary for the field
-        const fieldDict = field.acroField.dict;
-
-        // Get the current flags, default to 0 if not present
-        let flags = 0;
-        const ff = fieldDict.get(PDFName.of("Ff"));
-        if (ff instanceof PDFNumber) {
-          flags = ff.asNumber();
-        }
-
-        // Set the 1st bit (ReadOnly) using a bitwise OR
-        fieldDict.set(PDFName.of("Ff"), PDFNumber.of(flags | 1));
-      });
-
-      // 6. Save the PDF. The fields will be visible but locked.
       const filledPdfBytes = await pdfDoc.save();
       const blob = new Blob([filledPdfBytes], { type: "application/pdf" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `Scrutiny-Form-Final-${subjectCode}.pdf`;
+      link.download = `Scrutiny-Report-${subjectCode}.pdf`;
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-
-      toast.success("Scrutiny form filled and downloaded!");
+      URL.revokeObjectURL(link.href);
+      link.remove();
+      toast.success("Scrutiny report generated and downloaded!");
     } catch (error) {
       console.error("Failed to generate and fill PDF:", error);
-      toast.error("Could not generate report. Check console for details.");
+      toast.error(
+        "Could not generate report. Please check the console for details."
+      );
     }
   };
 
   const handleApprove = async () => {
-    const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
-      requirement: item,
-      status: checkedState[index].status === "Yes" ? "Yes" : "No",
+    const scrutinyReportA = scrutinyChecklistItems.map((req, i) => ({
+      requirement: req,
+      status: checkedStateA[i].status,
+    }));
+    const scrutinyReportB = scrutinyChecklistItems.map((req, i) => ({
+      requirement: req,
+      status: checkedStateB[i].status,
     }));
     try {
-      await approveSubmission(id, scrutinyReport);
+      await approveSubmission(id, { scrutinyReportA, scrutinyReportB });
       toast.success("Submission approved successfully!");
       navigate("/scrutiny");
     } catch (error) {
@@ -224,207 +290,281 @@ export const ScrutinyApproval = () => {
       toast.error("Please provide feedback before rejecting.");
       return;
     }
-    const scrutinyReport = scrutinyChecklistItems.map((item, index) => ({
-      requirement: item,
-      status: checkedState[index].status === "Yes" ? "Yes" : "No",
+    const scrutinyReportA = scrutinyChecklistItems.map((req, i) => ({
+      requirement: req,
+      status: checkedStateA[i].status,
+    }));
+    const scrutinyReportB = scrutinyChecklistItems.map((req, i) => ({
+      requirement: req,
+      status: checkedStateB[i].status,
     }));
     try {
-      await provideFeedback(id, newFeedback, scrutinyReport);
-      // Log the faculty email before sending
-      console.log("Sending rejection email to:", teacherMail);
-      // Send rejection email to faculty using the hook
-      try {
-        await sendRejectionEmail({
-          teacherMail,
-          subject: `Question Paper Rejected: ${subjectName} (${subjectCode})`,
-          facultyName: facultyEmail,
-          feedback: newFeedback,
-        });
-        toast.info("Submission rejected and email sent to faculty.");
-      } catch (emailError) {
-        toast.info("Submission rejected, but failed to send email.");
-        console.error("Email error:", emailError);
-      }
+      await provideFeedback(id, newFeedback, {
+        scrutinyReportA,
+        scrutinyReportB,
+      });
+      await sendRejectionEmail({
+        teacherMail,
+        subject: `Question Paper Rejected: ${subjectName} (${subjectCode})`,
+        facultyName: facultyEmail,
+        feedback: newFeedback,
+      });
+      toast.info("Submission rejected and email sent to faculty.");
       navigate("/scrutiny");
     } catch (error) {
-      toast.error("Failed to reject submission.");
+      toast.error("Failed to reject submission or send email.");
       console.error(error);
-    }
-  };
-
-  const handlePrint = () => {
-    if (fileURL) {
-      const printWindow = window.open(fileURL, "_blank");
-      if (printWindow) {
-        printWindow.onload = () => {
-          printWindow.focus();
-          printWindow.print();
-        };
-      }
-    } else {
-      toast.error("No file available to print.");
     }
   };
 
   return (
     <div className={styles.editorContainer}>
+           {" "}
       <div className={styles.contentWrapper}>
-        <h1 className={styles.pageTitle}>Scrutiny & Approval</h1>
+                <h1 className={styles.pageTitle}>Scrutiny & Approval</h1>       {" "}
         <div className={styles.mainContent}>
-          <div className={styles.contentGrid}>
-            <div className={styles.previewColumn}>
-              <div className={styles.previewCard}>
-                <h2 className={styles.cardTitle}>Document Preview</h2>
-                <div className={styles.previewBox}>
-                  {fileURL ? (
-                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
-                      <Viewer fileUrl={fileURL} />
-                    </Worker>
-                  ) : (
-                    <p>Loading document...</p>
-                  )}
-                </div>
-                {fileURL && (
-                  <button
-                    type="button"
-                    className={`${styles.actionButton} ${styles.printButton}`}
-                    onClick={handlePrint}
-                  >
-                    Print Original Document
-                  </button>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.detailsColumn}>
-              <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Submission Details</h2>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Faculty Name:</label>
-                  <input
-                    type="text"
-                    value={facultyEmail}
-                    className={styles.formInput}
-                    readOnly
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Subject:</label>
-                  <input
-                    type="text"
-                    value={subjectName}
-                    className={styles.formInput}
-                    readOnly
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Subject Code:</label>
-                  <input
-                    type="text"
-                    value={subjectCode}
-                    className={styles.formInput}
-                    readOnly
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Department:</label>
-                  <input
-                    type="text"
-                    value={department}
-                    className={styles.formInput}
-                    readOnly
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Year / Sem:</label>
-                  <input
-                    type="text"
-                    value={`${year} / ${semester}`}
-                    className={styles.formInput}
-                    readOnly
-                  />
-                </div>
-              </div>
-
-              <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Verification Checklist</h2>
-                <div className={styles.checklistContainer}>
-                  {checkedState.map((item, index) => (
-                    <label
-                      className={styles.checklistItem}
-                      key={index}
-                      htmlFor={`checkbox-${index}`}
-                    >
-                      <input
-                        type="checkbox"
-                        id={`checkbox-${index}`}
-                        checked={item.status === "Yes"}
-                        onChange={() => handleCheckboxChange(index)}
-                        className={styles.checklistCheckbox}
-                      />
-                      <span className={styles.checklistText}>
-                        {scrutinyChecklistItems[index]}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  className={`${styles.actionButton} ${styles.generateReportButton}`}
-                  onClick={handleGenerateReport}
-                >
-                  Generate & Download Scrutiny Report
-                </button>
-              </div>
-
-              <div className={styles.card}>
-                <h2 className={styles.cardTitle}>Feedback History</h2>
-                <div className={styles.feedbackList}>
-                  {feedbackMessages.length > 0 ? (
-                    feedbackMessages.map((msg, index) => (
-                      <FeedbackMessage key={index} message={msg} />
-                    ))
-                  ) : (
-                    <p className={styles.noFeedbackText}>
-                      No previous feedback messages.
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.card}>
-                <h2 className={styles.cardTitle}>
-                  Provide New Feedback (if rejecting)
-                </h2>
-                <textarea
-                  value={newFeedback}
-                  onChange={(e) => setNewFeedback(e.target.value)}
-                  placeholder="Enter feedback here before rejecting..."
+                   {" "}
+          <div className={styles.card}>
+                        <h2 className={styles.cardTitle}>Submission Details</h2>
+                       {" "}
+            <div className={styles.detailsGrid}>
+                           {" "}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Faculty Name:</label>
+                <input
+                  type="text"
+                  value={facultyEmail}
                   className={styles.formInput}
-                  rows={4}
+                  readOnly
                 />
               </div>
-
-              <div className={styles.finalActions}>
-                <button
-                  type="button"
-                  className={`${styles.actionButton} ${styles.rejectButton}`}
-                  onClick={handleReject}
-                >
-                  Reject with Feedback
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.actionButton} ${styles.approveButton}`}
-                  onClick={handleApprove}
-                >
-                  Approve
-                </button>
+                           {" "}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Subject:</label>
+                <input
+                  type="text"
+                  value={subjectName}
+                  className={styles.formInput}
+                  readOnly
+                />
               </div>
+                           {" "}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Subject Code:</label>
+                <input
+                  type="text"
+                  value={subjectCode}
+                  className={styles.formInput}
+                  readOnly
+                />
+              </div>
+                           {" "}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Department:</label>
+                <input
+                  type="text"
+                  value={department}
+                  className={styles.formInput}
+                  readOnly
+                />
+              </div>
+                           {" "}
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Year / Sem:</label>
+                <input
+                  type="text"
+                  value={`${year} / ${semester}`}
+                  className={styles.formInput}
+                  readOnly
+                />
+              </div>
+                         {" "}
             </div>
+                     {" "}
           </div>
+                   {" "}
+          <div className={styles.tabContainer}>
+                       {" "}
+            <button
+              onClick={() => setActiveTab("A")}
+              className={
+                activeTab === "A" ? styles.activeTab : styles.tabButton
+              }
+            >
+              Set A
+            </button>
+                       {" "}
+            <button
+              onClick={() => setActiveTab("B")}
+              className={
+                activeTab === "B" ? styles.activeTab : styles.tabButton
+              }
+            >
+              Set B
+            </button>
+                     {" "}
+          </div>
+                   {" "}
+          <div className={styles.tabContent}>
+                       {" "}
+            {activeTab === "A" && (
+              <div className={styles.scrutinyPair}>
+                               {" "}
+                <div
+                  className={`${styles.paperColumn} ${styles.stickyPreview}`}
+                >
+                                   {" "}
+                  <div className={styles.card}>
+                                       {" "}
+                    <div className={styles.previewBox}>
+                                           {" "}
+                      {fileURLA ? (
+                        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                          <Viewer fileUrl={fileURLA} />
+                        </Worker>
+                      ) : (
+                        <p>Loading document...</p>
+                      )}
+                                         {" "}
+                    </div>
+                                     {" "}
+                  </div>
+                                 {" "}
+                </div>
+                               {" "}
+                <div className={styles.checklistColumn}>
+                                   {" "}
+                  <ScrutinyChecklist
+                    title="Verification Checklist - Set A"
+                    items={scrutinyChecklistItems}
+                    checkedState={checkedStateA}
+                    onStateChange={(index, value) =>
+                      handleRadioChange("A", index, value)
+                    }
+                  />
+                                 {" "}
+                </div>
+                             {" "}
+              </div>
+            )}
+                       {" "}
+            {activeTab === "B" && (
+              <div className={styles.scrutinyPair}>
+                               {" "}
+                <div
+                  className={`${styles.paperColumn} ${styles.stickyPreview}`}
+                >
+                                   {" "}
+                  <div className={styles.card}>
+                                       {" "}
+                    <div className={styles.previewBox}>
+                                           {" "}
+                      {fileURLB ? (
+                        <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
+                          <Viewer fileUrl={fileURLB} />
+                        </Worker>
+                      ) : (
+                        <p>Loading document...</p>
+                      )}
+                                         {" "}
+                    </div>
+                                     {" "}
+                  </div>
+                                 {" "}
+                </div>
+                               {" "}
+                <div className={styles.checklistColumn}>
+                                   {" "}
+                  <ScrutinyChecklist
+                    title="Verification Checklist - Set B"
+                    items={scrutinyChecklistItems}
+                    checkedState={checkedStateB}
+                    onStateChange={(index, value) =>
+                      handleRadioChange("B", index, value)
+                    }
+                  />
+                                 {" "}
+                </div>
+                             {" "}
+              </div>
+            )}
+                     {" "}
+          </div>
+                   {" "}
+          <div className={styles.commonDetails}>
+                       {" "}
+            <div className={styles.commonActions}>
+                           {" "}
+              <button
+                type="button"
+                className={`${styles.actionButton} ${styles.generateReportButton}`}
+                onClick={handleGenerateReport}
+              >
+                Generate & Download Scrutiny Report
+              </button>
+                         {" "}
+            </div>
+                       {" "}
+            <div className={styles.card}>
+                           {" "}
+              <h2 className={styles.cardTitle}>Feedback History</h2>           
+               {" "}
+              <div className={styles.feedbackList}>
+                {feedbackMessages.length > 0 ? (
+                  feedbackMessages.map((msg, index) => (
+                    <FeedbackMessage key={index} message={msg} />
+                  ))
+                ) : (
+                  <p className={styles.noFeedbackText}>
+                    No previous feedback messages.
+                  </p>
+                )}
+              </div>
+                         {" "}
+            </div>
+                       {" "}
+            <div className={styles.card}>
+                           {" "}
+              <h2 className={styles.cardTitle}>
+                Provide New Feedback (if rejecting)
+              </h2>
+                           {" "}
+              <textarea
+                value={newFeedback}
+                onChange={(e) => setNewFeedback(e.target.value)}
+                placeholder="Enter feedback here before rejecting..."
+                className={styles.formInput}
+                rows={4}
+              />
+                         {" "}
+            </div>
+                       {" "}
+            <div className={styles.finalActions}>
+                           {" "}
+              <button
+                type="button"
+                className={`${styles.actionButton} ${styles.rejectButton}`}
+                onClick={handleReject}
+              >
+                Reject with Feedback
+              </button>
+                           {" "}
+              <button
+                type="button"
+                className={`${styles.actionButton} ${styles.approveButton}`}
+                onClick={handleApprove}
+              >
+                Approve
+              </button>
+                         {" "}
+            </div>
+                     {" "}
+          </div>
+                 {" "}
         </div>
+             {" "}
       </div>
+         {" "}
     </div>
   );
 };
