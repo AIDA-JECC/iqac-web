@@ -72,9 +72,10 @@
   margin-top: 12px; /* Add some space below the title */
   width: 100%;
   flex-grow: 1; /* CRITICAL: This makes the box grow to fill available space */
-  min-height: 300px; /* Ensures the box doesn't become too small */
-  overflow: auto; /* This will add a scrollbar INSIDE the box if the PDF is long */
-  display: flex; /* Helps center the 'No file selected' message */
+  max-height: 350px; /* You can adjust this value to your preferred height */
+  overflow-y: auto;  /* Adds a vertical scrollbar only when needed */
+  position: relative;  /* Ensures the viewer's internal elements behave correctly */
+  display: flex;       /* Helps center the 'No file selected' message */
   justify-content: center;
   align-items: center;
 }
