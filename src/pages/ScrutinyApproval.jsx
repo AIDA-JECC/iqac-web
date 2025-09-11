@@ -14,7 +14,7 @@ import {
 } from "../services/questionPaperService.js";
 import { FeedbackMessage } from "../components/FeedbackMessage.jsx";
 import { PDFDocument, StandardFonts, PDFTextField, rgb } from "pdf-lib";
-import formUrl from "./QP_Scrutiny Form_New _Fields.pdf";
+import formUrl from "./modified_scrutiny.pdf";
 
 // --- Helper Functions & Constants ---
 const extractName = (email) => {
@@ -172,72 +172,93 @@ export const ScrutinyApproval = () => {
       const timesRomanFont = await pdfDoc.embedFont(StandardFonts.TimesRoman);
       const fontOptions = { font: timesRomanFont };
 
+      // =======================
+      // General Information
+      // =======================
+      form.getField("department_of").setText(department, fontOptions);
       form
-        .getField("Course Code & Title")
+        .getField("course_code_&_title")
         .setText(`${subjectCode} - ${subjectName}`, fontOptions);
-      form.getField("Name of the QP Setter").setText(facultyEmail, fontOptions);
+      form.getField("name_of_the_qp_setter").setText(facultyEmail, fontOptions);
       form
-        .getField("Semester & Branch")
+        .getField("name_of_the_qp_scrutinizer")
+        .setText(extractName(auth.currentUser?.email), fontOptions);
+      form
+        .getField("semester_&_branch")
         .setText(`${semester} / ${department}`, fontOptions);
       form
-        .getField("Date of Scrutiny")
+        .getField("date_of_scrutiny")
         .setText(new Date().toLocaleDateString("en-IN"), fontOptions);
-      form
-        .getField("Name of the QP Scrutinizer")
-        .setText(extractName(auth.currentUser?.email), fontOptions);
 
-      const processChecklist = (checklistState, setIdentifier) => {
+      // =======================
+      // Checklist Handler
+      // =======================
+      const processChecklist = (checklistState, prefix) => {
         checklistState.forEach((item, index) => {
           const serial = index + 1;
-          const yesField = form.getField(`SL-${serial}${setIdentifier}-YES`);
-          const noField = form.getField(`SL-${serial}${setIdentifier}-NO`);
 
+          // Checkboxes
+          const yesField = form.getField(`${prefix}_${serial}_YES`);
+          const noField = form.getField(`${prefix}_${serial}_NO`);
+          const naField = form.getField(`${prefix}_${serial}_NA`);
+
+          // Remarks (text field)
+          const remarkField = form.getField(`${prefix}_${serial}_REMARK`);
+
+          // Reset checkboxes
+          yesField?.uncheck?.();
+          noField?.uncheck?.();
+          naField?.uncheck?.();
+
+          // Apply status
           if (item.status === "Yes") {
-            yesField.check();
+            yesField?.check();
           } else if (item.status === "No") {
-            noField.check();
+            noField?.check();
           } else if (item.status === "N/A") {
-            const noFieldWidget = noField.acroField.getWidgets()[0];
-            const { x, y, width, height } = noFieldWidget.getRectangle();
-            const padding = 3;
+            naField?.check();
+          }
 
-            firstPage.drawLine({
-              start: { x: x + padding, y: y + padding },
-              end: { x: x + width - padding, y: y + height - padding },
-              thickness: 1.5,
-              color: rgb(0.2, 0.2, 0.2),
-            });
-            firstPage.drawLine({
-              start: { x: x + padding, y: y + height - padding },
-              end: { x: x + width - padding, y: y + padding },
-              thickness: 1.5,
-              color: rgb(0.2, 0.2, 0.2),
-            });
+          // Add remark if available
+          if (item.remark && remarkField) {
+            remarkField.setText(item.remark, fontOptions);
           }
         });
 
-        const allItemsApproved = checklistState.every(
+        // === Approval fields (text fields) ===
+        const hasNo = checklistState.some((item) => item.status === "No");
+        const allYes = checklistState.every((item) => item.status === "Yes");
+        const allYesOrNa = checklistState.every(
           (item) => item.status === "Yes" || item.status === "N/A"
         );
-        const approvedField = form.getField(
-          `SET${setIdentifier}: Approved without Correction`
-        );
-        const resubmitField = form.getField(
-          `SET${setIdentifier}: Resubmission Required`
-        );
 
-        if (allItemsApproved) {
-          approvedField.setText("Yes", fontOptions);
-          resubmitField.setText("No", fontOptions);
+        const approvedField = form.getField(
+          `${prefix}_Approved_without_correction`
+        );
+        const resubmitField = form.getField(`${prefix}_Resubmission_Required`);
+
+        // Approved_without_correction
+        approvedField?.setText(allYesOrNa ? "YES" : "NO", fontOptions);
+
+        // Resubmission_Required
+        if (hasNo) {
+          resubmitField?.setText("YES", fontOptions);
+        } else if (allYes) {
+          resubmitField?.setText("NO", fontOptions);
         } else {
-          approvedField.setText("No", fontOptions);
-          resubmitField.setText("Yes", fontOptions);
+          resubmitField?.setText("NO", fontOptions); // mix of YES + NA
         }
       };
 
-      processChecklist(checkedStateA, "A");
-      processChecklist(checkedStateB, "B");
+      // =======================
+      // Run Checklist for Set A & Set B
+      // =======================
+      processChecklist(checkedStateA, "setA");
+      processChecklist(checkedStateB, "setB");
 
+      // =======================
+      // Update appearances
+      // =======================
       form.getFields().forEach((field) => {
         if (field instanceof PDFTextField) {
           field.updateAppearances(timesRomanFont);
@@ -248,6 +269,9 @@ export const ScrutinyApproval = () => {
 
       form.flatten();
 
+      // =======================
+      // Save and download
+      // =======================
       const filledPdfBytes = await pdfDoc.save();
       const blob = new Blob([filledPdfBytes], { type: "application/pdf" });
       const link = document.createElement("a");
