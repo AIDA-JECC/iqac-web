@@ -64,32 +64,33 @@
 
 /* --- Tab Navigation --- */
 .tabContainer {
-    display: flex;
-    border-bottom: 1px solid var(--border-color);
+  display: flex;
+  border-bottom: 1px solid var(--border-color);
 }
-.tabButton, .activeTab {
-    padding: 12px 24px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    background: none;
-    border: none;
-    border-bottom: 3px solid transparent;
-    color: var(--text-secondary);
-    transition: all 0.2s ease-in-out;
+.tabButton,
+.activeTab {
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s ease-in-out;
 }
 .tabButton:hover {
-    color: var(--primary-color);
-    background-color: var(--primary-color-light);
+  color: var(--primary-color);
+  background-color: var(--primary-color-light);
 }
 .activeTab {
-    color: var(--primary-color);
-    border-bottom-color: var(--primary-color);
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
 }
 
 /* --- Core Layout: Paper & Checklist Paired Grid --- */
 .tabContent {
-    padding-top: 1rem;
+  padding-top: 1rem;
 }
 .scrutinyPair {
   display: grid;
@@ -116,15 +117,14 @@
 }
 /* Remove padding and border from the card holding the preview */
 .paperColumn .card {
-    padding: 0;
-    border: none;
-    box-shadow: var(--card-shadow);
-    background: transparent;
+  padding: 0;
+  border: none;
+  box-shadow: var(--card-shadow);
+  background: transparent;
 }
 .paperColumn .cardTitle {
-    display: none; /* Hide the title inside the paper column */
+  display: none; /* Hide the title inside the paper column */
 }
-
 
 /* --- Verification Checklist --- */
 .checklistContainer {
@@ -188,7 +188,6 @@ textarea.formInput {
   min-height: 100px;
 }
 
-
 /* --- Feedback & Actions --- */
 .commonDetails {
   display: flex;
@@ -205,14 +204,15 @@ textarea.formInput {
   overflow-y: auto;
   padding: 4px;
 }
-.commonActions, .finalActions {
+.commonActions,
+.finalActions {
   display: flex;
   justify-content: center;
   gap: 16px;
   width: 100%;
 }
 .finalActions {
-    justify-content: flex-end;
+  justify-content: flex-end;
 }
 .actionButton {
   font-family: var(--font-family);
@@ -228,19 +228,99 @@ textarea.formInput {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-.approveButton { background-color: var(--approve-color); color: white; }
-.approveButton:hover { background-color: var(--approve-color-hover); }
-.rejectButton { background-color: var(--reject-color); color: white; }
-.rejectButton:hover { background-color: var(--reject-color-hover); }
-.generateReportButton { background-color: var(--card-bg); color: var(--primary-color); border-color: var(--primary-color); }
-.generateReportButton:hover { background-color: var(--primary-color); color: white; }
+
+/* Container for each checklist item */
+.checklistItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  margin-bottom: 0.75rem;
+}
+
+/* Label text */
+.label {
+  font-weight: 500;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+/* Radio group row */
+.radioGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #444;
+}
+
+.radioLabel input[type="radio"] {
+  accent-color: #2563eb; /* nice blue for Yes/No/NA */
+  cursor: pointer;
+}
+
+/* Remark box (only visible when status is No/NA) */
+.remarkBox {
+  margin-top: 0.5rem;
+}
+
+.remarkInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  outline: none;
+  background: #fff;
+  transition: border-color 0.2s ease;
+}
+
+.remarkInput:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.approveButton {
+  background-color: var(--approve-color);
+  color: white;
+}
+.approveButton:hover {
+  background-color: var(--approve-color-hover);
+}
+.rejectButton {
+  background-color: var(--reject-color);
+  color: white;
+}
+.rejectButton:hover {
+  background-color: var(--reject-color-hover);
+}
+.generateReportButton {
+  background-color: var(--card-bg);
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.generateReportButton:hover {
+  background-color: var(--primary-color);
+  color: white;
+}
 
 /* --- Media Queries --- */
 @media (max-width: 1200px) {
   .scrutinyPair {
     grid-template-columns: 1fr; /* Stack columns */
   }
-  .paperColumn, .stickyPreview {
+  .paperColumn,
+  .stickyPreview {
     position: static;
     height: auto;
   }
@@ -249,10 +329,24 @@ textarea.formInput {
   }
 }
 @media (max-width: 768px) {
-  .contentWrapper { padding: 0 16px; }
-  .pageTitle { font-size: 24px; }
-  .card { padding: 16px; }
-  .detailsGrid { grid-template-columns: 1fr; }
-  .finalActions, .commonActions { flex-direction: column-reverse; gap: 12px; }
-  .actionButton { width: 100%; }
+  .contentWrapper {
+    padding: 0 16px;
+  }
+  .pageTitle {
+    font-size: 24px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .detailsGrid {
+    grid-template-columns: 1fr;
+  }
+  .finalActions,
+  .commonActions {
+    flex-direction: column-reverse;
+    gap: 12px;
+  }
+  .actionButton {
+    width: 100%;
+  }
 }
